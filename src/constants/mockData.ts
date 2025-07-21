@@ -1,0 +1,136 @@
+import {
+  FileText,
+  Folder,
+  Brain,
+  Target,
+  BookOpen,
+  Shield,
+  TrendingUp,
+  Lightbulb,
+  Heart,
+  Briefcase,
+  Archive,
+  Database,
+  Upload,
+  Search,
+  BarChart3,
+} from "lucide-vue-next"
+import type { Stat, Category, QuickAction, FABAction } from "@/types"
+
+export const STATS_DATA: Stat[] = [
+  {
+    label: "Total Documentos",
+    value: "1,247",
+    change: "+12%",
+    trend: "up",
+    icon: FileText,
+    iconBg: "bg-gradient-to-r from-blue-500 to-cyan-500",
+    gradient: "from-blue-500 to-cyan-500",
+  },
+  {
+    label: "Categorías Activas",
+    value: "6",
+    change: "+2",
+    trend: "up",
+    icon: Folder,
+    iconBg: "bg-gradient-to-r from-green-500 to-emerald-500",
+    gradient: "from-green-500 to-emerald-500",
+  },
+  {
+    label: "Análisis K-Means",
+    value: "4",
+    change: "Nuevo",
+    trend: "up",
+    icon: Brain,
+    iconBg: "bg-gradient-to-r from-purple-500 to-pink-500",
+    gradient: "from-purple-500 to-pink-500",
+  },
+  {
+    label: "Precisión IA",
+    value: "94.2%",
+    change: "+2.1%",
+    trend: "up",
+    icon: Target,
+    iconBg: "bg-gradient-to-r from-orange-500 to-red-500",
+    gradient: "from-orange-500 to-red-500",
+  },
+]
+
+export const CATEGORIES_DATA: Category[] = [
+  {
+    id: 1,
+    name: "Académicos",
+    count: 234,
+    icon: BookOpen,
+    iconBg: "bg-gradient-to-r from-blue-500 to-indigo-500",
+    gradient: "from-blue-500 to-indigo-500",
+    progressColor: "bg-blue-500",
+  },
+  {
+    id: 2,
+    name: "Legales",
+    count: 189,
+    icon: Shield,
+    iconBg: "bg-gradient-to-r from-red-500 to-pink-500",
+    gradient: "from-red-500 to-pink-500",
+    progressColor: "bg-red-500",
+  },
+  {
+    id: 3,
+    name: "Financieros",
+    count: 156,
+    icon: TrendingUp,
+    iconBg: "bg-gradient-to-r from-green-500 to-emerald-500",
+    gradient: "from-green-500 to-emerald-500",
+    progressColor: "bg-green-500",
+  },
+  {
+    id: 4,
+    name: "Técnicos",
+    count: 298,
+    icon: Lightbulb,
+    iconBg: "bg-gradient-to-r from-yellow-500 to-orange-500",
+    gradient: "from-yellow-500 to-orange-500",
+    progressColor: "bg-yellow-500",
+  },
+  {
+    id: 5,
+    name: "Personales",
+    count: 87,
+    icon: Heart,
+    iconBg: "bg-gradient-to-r from-pink-500 to-rose-500",
+    gradient: "from-pink-500 to-rose-500",
+    progressColor: "bg-pink-500",
+  },
+  {
+    id: 6,
+    name: "Corporativos",
+    count: 283,
+    icon: Briefcase,
+    iconBg: "bg-gradient-to-r from-purple-500 to-violet-500",
+    gradient: "from-purple-500 to-violet-500",
+    progressColor: "bg-purple-500",
+  },
+]
+
+export const QUICK_ACTIONS: QuickAction[] = [
+  {
+    id: "download-all",
+    label: "Descargar Todo",
+    icon: Archive,
+    color: "text-blue-400",
+  },
+  {
+    id: "export-category",
+    label: "Exportar Categoría",
+    icon: Database,
+    color: "text-green-400",
+  },
+  {
+    id: "run-kmeans",
+    label: "Análisis K-Means",
+    icon: Brain,
+    color: "text-purple-400",
+  },
+]
+
