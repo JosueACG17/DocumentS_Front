@@ -6,6 +6,13 @@
         Documentos Recientes
       </h3>
       <div class="flex items-center space-x-2">
+        <router-link to="/todos"
+          class="text-blue-400 hover:underline text-sm font-medium flex items-center space-x-1 cursor-pointer">
+          <span>Ver todos los documentos</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </router-link>
         <button @click="$emit('update:viewMode', 'list')" :class="viewMode === 'list' ? 'bg-purple-500' : 'bg-white/10'"
           class="p-2 rounded-lg transition-colors cursor-pointer">
           <List class="w-4 h-4 text-white" />
@@ -19,8 +26,8 @@
 
     <!-- List View -->
     <div v-if="viewMode === 'list'" class="space-y-3">
-      <template v-if="documents.length > 0">
-        <div v-for="doc in documents" :key="doc.id"
+      <template v-if="lastDocuments.length > 0">
+        <div v-for="doc in lastDocuments" :key="doc.id"
           class="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 group">
           <div class="flex items-center space-x-4">
             <div :class="getFileIcon(doc.extension).bg" class="w-10 h-10 rounded-lg flex items-center justify-center">
@@ -54,9 +61,9 @@
 
     <!-- Grid View -->
     <div v-else>
-      <template v-if="documents.length > 0">
+      <template v-if="lastDocuments.length > 0">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="doc in documents" :key="doc.id"
+          <div v-for="doc in lastDocuments" :key="doc.id"
             class="group relative overflow-hidden rounded-xl bg-white/5 hover:bg-white/10 p-4 transition-all duration-300 hover:scale-105">
             <div class="flex items-center justify-between mb-3">
               <div :class="getFileIcon(doc.extension).bg" class="w-10 h-10 rounded-lg flex items-center justify-center">
@@ -96,6 +103,7 @@
 <script setup lang="ts">
 import { FileText, List, Grid, Download, Eye, FileX } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
+import { computed } from 'vue'
 import type { Document, ViewMode } from '@/types'
 
 interface Props {
@@ -109,6 +117,8 @@ interface Emits {
   (e: 'viewDocument', docId: number): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<Emits>()
+
+const lastDocuments = computed(() => props.documents.slice(0, 6))
 </script>

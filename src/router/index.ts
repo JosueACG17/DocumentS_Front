@@ -3,6 +3,8 @@ import HomeView from '../views/HomeView.vue'
 
 const CategoryDocumentsView = () => import('../views/CategoryDocumentsView.vue')
 
+const AllDocumentsView = () => import('../views/AllDocumentsView.vue')
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -16,6 +18,11 @@ const router = createRouter({
       name: 'category-documents',
       component: CategoryDocumentsView,
       props: true,
+    },
+    {
+      path: '/todos',
+      name: 'all-documents',
+      component: AllDocumentsView,
     },
   ],
 })
