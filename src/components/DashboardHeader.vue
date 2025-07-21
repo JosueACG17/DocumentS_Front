@@ -18,9 +18,6 @@
             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span class="text-sm text-gray-300">{{ totalDocuments }} documentos</span>
           </div>
-          <button class="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-all">
-            <Settings class="w-5 h-5 text-gray-300" />
-          </button>
         </div>
       </div>
     </div>
@@ -28,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { FileText, Settings } from 'lucide-vue-next'
+import { FileText } from 'lucide-vue-next'
 
 interface Props {
   totalDocuments: number

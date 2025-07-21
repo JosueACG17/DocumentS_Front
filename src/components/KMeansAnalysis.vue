@@ -40,7 +40,7 @@
           <p class="text-sm text-gray-300 mb-2">{{ cluster.description }}</p>
           <div class="flex flex-wrap gap-1">
             <span v-for="keyword in cluster.keywords" :key="keyword"
-                  class="px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded-full">
+                  class="px-2 py-1 text-xs bg-blue-500 text-white rounded-full">
               {{ keyword }}
             </span>
           </div>

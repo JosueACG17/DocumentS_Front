@@ -7,11 +7,11 @@
       </h3>
       <div class="flex items-center space-x-2">
         <button @click="$emit('update:viewMode', 'list')" :class="viewMode === 'list' ? 'bg-purple-500' : 'bg-white/10'"
-          class="p-2 rounded-lg transition-colors">
+          class="p-2 rounded-lg transition-colors cursor-pointer">
           <List class="w-4 h-4 text-white" />
         </button>
         <button @click="$emit('update:viewMode', 'grid')" :class="viewMode === 'grid' ? 'bg-purple-500' : 'bg-white/10'"
-          class="p-2 rounded-lg transition-colors">
+          class="p-2 rounded-lg transition-colors cursor-pointer">
           <Grid class="w-4 h-4 text-white" />
         </button>
       </div>
@@ -34,20 +34,22 @@
           <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button @click="$emit('downloadDocument', doc.id)"
               class="p-2 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg transition-colors">
-              <Download class="w-4 h-4 text-blue-400" />
+              <Download class="w-4 h-4 text-blue-400 cursor-pointer" />
             </button>
             <button @click="$emit('viewDocument', doc.id)"
               class="p-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg transition-colors">
-              <Eye class="w-4 h-4 text-green-400" />
+              <Eye class="w-4 h-4 text-green-400 cursor-pointer" />
             </button>
           </div>
         </div>
       </template>
       <template v-else>
-        <div class="text-center text-gray-400 py-8">
-          No se encontraron los documentos que buscas.
+        <div class="text-center text-gray-400 py-12 flex flex-col items-center justify-center space-y-4">
+          <FileX class="w-12 h-12 text-gray-500" />
+          <p class="text-base">No se encontraron los documentos que buscas.</p>
         </div>
       </template>
+
     </div>
 
     <!-- Grid View -->
@@ -63,11 +65,11 @@
               <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button @click="$emit('downloadDocument', doc.id)"
                   class="p-1.5 bg-blue-500/20 hover:bg-blue-500/30 rounded-md transition-colors">
-                  <Download class="w-3 h-3 text-blue-400" />
+                  <Download class="w-3 h-3 text-blue-400 cursor-pointer" />
                 </button>
                 <button @click="$emit('viewDocument', doc.id)"
                   class="p-1.5 bg-green-500/20 hover:bg-green-500/30 rounded-md transition-colors">
-                  <Eye class="w-3 h-3 text-green-400" />
+                  <Eye class="w-3 h-3 text-green-400 cursor-pointer" />
                 </button>
               </div>
             </div>
@@ -81,16 +83,18 @@
         </div>
       </template>
       <template v-else>
-        <div class="text-center text-gray-400 py-8">
-          No hay documentos recientes.
+        <div class="text-center text-gray-400 py-12 flex flex-col items-center justify-center space-y-4">
+          <FileX class="w-12 h-12 text-gray-500" />
+          <p class="text-sm">No hay documentos recientes.</p>
         </div>
       </template>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FileText, List, Grid, Download, Eye } from 'lucide-vue-next'
+import { FileText, List, Grid, Download, Eye, FileX } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
 import type { Document, ViewMode } from '@/types'
 

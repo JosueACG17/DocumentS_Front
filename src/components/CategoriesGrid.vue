@@ -7,12 +7,11 @@
       </h3>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <div v-for="category in categories" :key="category.id"
-           @click="$emit('categorySelected', category.id)"
-           :class="selectedCategory === category.id ? 'ring-2 ring-purple-400' : ''"
-           class="relative group cursor-pointer rounded-xl bg-white/5 hover:bg-white/10 p-4 transition-all duration-300 hover:scale-105">
+      <div v-for="category in categories" :key="category.id" @click="goToCategory(category.id)"
+        :class="selectedCategory === category.id ? 'ring-2 ring-blue-400' : ''"
+        class="relative group cursor-pointer rounded-xl bg-white/5 hover:bg-white/10 p-4 transition-all duration-300 hover:scale-105">
         <div class="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 transition-opacity rounded-xl"
-             :class="category.gradient"></div>
+          :class="category.gradient"></div>
         <div class="relative">
           <div :class="category.iconBg" class="w-10 h-10 rounded-lg flex items-center justify-center mb-3">
             <component :is="category.icon" class="w-5 h-5 text-white" />
@@ -20,9 +19,8 @@
           <h4 class="font-medium text-white text-sm mb-1">{{ category.name }}</h4>
           <p class="text-xs text-gray-400 mb-2">{{ category.count }} docs</p>
           <div class="w-full bg-gray-700 rounded-full h-1">
-            <div :class="category.progressColor"
-                 class="h-1 rounded-full transition-all duration-500"
-                 :style="{ width: (category.count / totalDocuments * 100) + '%' }"></div>
+            <div :class="category.progressColor" class="h-1 rounded-full transition-all duration-500"
+              :style="{ width: (category.count / totalDocuments * 100) + '%' }"></div>
           </div>
         </div>
       </div>
@@ -34,6 +32,8 @@
 import { FolderOpen } from 'lucide-vue-next'
 import type { Category } from '@/types'
 
+import { useRouter } from 'vue-router'
+
 interface Props {
   categories: Category[]
   selectedCategory: number | null
@@ -41,9 +41,14 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'categorySelected', categoryId: number): void
+  (e: 'categorySelected', categoryId: number): void // ya no se usa para navegación
 }
 
 defineProps<Props>()
 defineEmits<Emits>()
+
+const router = useRouter()
+function goToCategory(id: number) {
+  router.push({ name: 'category-documents', params: { id } })
+}
 </script>

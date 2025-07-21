@@ -59,7 +59,7 @@ import { useKMeans } from '@/composables/useKMeans'
 import { useSearch } from '@/composables/useSearch'
 
 // Constants
-import { STATS_DATA, CATEGORIES_DATA } from '@/constants/MockData'
+import { STATS_DATA, CATEGORIES_DATA } from '@/constants/mockData'
 
 // Types
 import type { ViewMode } from '@/types'
