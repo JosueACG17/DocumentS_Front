@@ -1,9 +1,10 @@
 <template>
-  <div class="min-h-screen bg-black">
+  <div
+    :class="['min-h-screen', themeStore.dark ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-900', 'transition-colors duration-300']">
     <!-- Header -->
     <DashboardHeader :total-documents="totalDocuments" />
 
-    <div class="relative z-10 mx-auto px-6 py-8">
+    <div :class="['relative z-10 mx-auto px-6 py-8', themeStore.dark ? 'bg-neutral-900' : 'bg-white']">
       <!-- Stats Cards -->
       <StatsCards :stats="stats" />
 
@@ -12,9 +13,9 @@
         <!-- Upload & Categorías alineados -->
         <div class="col-span-1 lg:col-span-3 w-full">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <FileUploadSection @file-uploaded="handleFileUploaded" class="h-full" />
+            <FileUploadSection @file-uploaded="handleFileUploaded" />
             <CategoriesGrid :categories="categories" :selected-category="selectedCategory"
-              :total-documents="totalDocuments" @category-selected="selectCategory" class="h-full" />
+              :total-documents="totalDocuments" @category-selected="selectCategory" />
           </div>
         </div>
 
@@ -22,7 +23,6 @@
         <div class="col-span-1 lg:col-span-3 w-full">
           <SearchAndFilter v-model:search-query="searchQuery" v-model:filter-extension="filterExtension"
             @search="searchDocuments" class="w-full" />
-
           <DocumentsList :documents="filteredDocuments" v-model:view-mode="viewMode"
             @download-document="downloadDocument" @view-document="viewDocument" class="w-full" />
         </div>
@@ -32,8 +32,8 @@
       <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <KMeansAnalysis :is-analyzing="isAnalyzing" :kmeans-status="kmeansStatus"
           :kmeans-status-color="kmeansStatusColor" :results="kmeansResults" @run-analysis="runKMeansAnalysis" />
-
         <KMeansVisualization :results="kmeansResults" />
+
       </div>
     </div>
 
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useThemeStore } from '@/stores/theme'
 
 // Components
 import DashboardHeader from '@/components/DashboardHeader.vue'
@@ -68,6 +69,9 @@ import type { ViewMode } from '@/types'
 const stats = ref(STATS_DATA)
 const categories = ref(CATEGORIES_DATA)
 const viewMode = ref<ViewMode>('list')
+
+// Theme
+const themeStore = useThemeStore()
 
 // Composables
 const { documents, addDocument, downloadDocument, viewDocument } = useDocuments()
