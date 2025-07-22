@@ -23,10 +23,10 @@
             <p class="text-sm text-gray-400">Documentos de la categoría</p>
           </div>
         </div>
-        <button class="p-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-blue-400 flex items-center shadow-md cursor-pointer"
-          @click="downloadAll" v-if="documents && documents.length > 0">
-          <Download class="w-5 h-5 mr-2" /> Descargar todo
-        </button>
+          <button class="p-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-blue-400 flex items-center shadow-md cursor-pointer"
+            @click="downloadAll" v-if="documents && documents.length > 0">
+            <Download class="w-5 h-5 mr-2" /> Descargar todo
+          </button>
       </div>
       <div v-if="documents.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="doc in documents" :key="doc.id"

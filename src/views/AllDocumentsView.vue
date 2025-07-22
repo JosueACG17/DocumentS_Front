@@ -11,11 +11,17 @@
         <span>Regresar</span>
       </button>
       <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-bold text-white flex items-center">
-          <FileText class="w-7 h-7 mr-2 text-green-400" />
-          Todos los Documentos
-        </h2>
+        <div class="flex items-center space-x-4">
+          <h2 class="text-2xl font-bold text-white flex items-center">
+            <FileText class="w-7 h-7 mr-2 text-green-400" />
+            Todos los Documentos
+          </h2>
+        </div>
         <div class="flex items-center space-x-2">
+                    <button v-if="filteredDocuments.length > 0" @click="downloadAll"
+            class="p-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-blue-400 flex items-center shadow-md cursor-pointer">
+            <Download class="w-5 h-5 mr-2" /> Descargar todo
+          </button>
           <label class="text-white text-sm">Filtrar por:</label>
           <select v-model="filter" class="rounded-lg bg-white/10 text-white px-3 py-1 focus:outline-none">
             <option value="" class="bg-black">Todos</option>
@@ -55,6 +61,9 @@
 </template>
 
 <script setup lang="ts">
+function downloadAll() {
+  alert('Descargar todos los documentos')
+}
 import DashboardHeader from '@/components/DashboardHeader.vue'
 import { FileText, Download, Eye, FileX } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'

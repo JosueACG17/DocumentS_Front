@@ -9,7 +9,7 @@
         class="border-2 border-dashed border-white/30 rounded-xl p-8 text-center hover:border-purple-400 transition-colors duration-300 cursor-pointer group flex-1 flex flex-col justify-center"
         @click="triggerFileUpload" @dragover.prevent @drop.prevent="handleFileDrop">
         <div
-          class="w-16 h-16 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+          class="w-16 h-16 bg-gradient-to-r from-purple-700 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
           <FileText class="w-8 h-8 text-white" />
         </div>
         <p class="text-white font-medium mb-2">Arrastra tu archivo aquí</p>
@@ -24,7 +24,7 @@
           <span>{{ uploadProgress }}%</span>
         </div>
         <div class="w-full bg-gray-700 rounded-full h-2">
-          <div class="bg-gradient-to-r from-purple-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
+          <div class="bg-gradient-to-r from-purple-700 to-cyan-600 h-2 rounded-full transition-all duration-300"
             :style="{ width: uploadProgress + '%' }"></div>
         </div>
       </div>

@@ -113,24 +113,3 @@ export const CATEGORIES_DATA: Category[] = [
   },
 ]
 
-export const QUICK_ACTIONS: QuickAction[] = [
-  {
-    id: "download-all",
-    label: "Descargar Todo",
-    icon: Archive,
-    color: "text-blue-400",
-  },
-  {
-    id: "export-category",
-    label: "Exportar Categoría",
-    icon: Database,
-    color: "text-green-400",
-  },
-  {
-    id: "run-kmeans",
-    label: "Análisis K-Means",
-    icon: Brain,
-    color: "text-purple-400",
-  },
-]
-

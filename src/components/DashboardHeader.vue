@@ -3,14 +3,14 @@
     <div class="mx-auto px-6 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center">
+          <div class="w-10 h-10 bg-gradient-to-r from-purple-700 to-cyan-600 rounded-xl flex items-center justify-center">
             <FileText class="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 class="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Documents Sort
+              Organizador de Documentos
             </h1>
-            <p class="text-sm text-gray-400">Organizador Inteligente de Documentos</p>
+            <p class="text-sm text-gray-400">Organiza tus Documentos de manera Inteligente</p>
           </div>
         </div>
         <div class="flex items-center space-x-4">
