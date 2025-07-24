@@ -56,4 +56,12 @@ export const DocumentService = {
       responseType: 'blob',
     })
   },
+
+  // POST /files/move - Mover archivo entre carpetas
+  moveFile(
+    payload: { filename: string; source_folder: string; target_folder: string },
+    config?: AxiosRequestConfig,
+  ) {
+    return genericRequest.post<string>('/files/move', payload, config)
+  },
 }

@@ -53,6 +53,12 @@
                 :class="[themeStore.dark ? 'bg-green-500/20 hover:bg-green-500/30' : 'bg-green-100 hover:bg-green-200', 'p-1.5 rounded-md transition-colors cursor-pointer']">
                 <Eye :class="themeStore.dark ? 'text-green-400' : 'text-green-600'" class="w-4 h-4" />
               </button>
+              <button @click="openMoveModal(doc)"
+                :class="[themeStore.dark ? 'bg-yellow-500/20 hover:bg-yellow-500/30' : 'bg-yellow-100 hover:bg-yellow-200', 'p-1.5 rounded-md transition-colors cursor-pointer']"
+                title="Mover a otra categoría">
+                <Pencil :class="themeStore.dark ? 'text-yellow-400' : 'text-yellow-600'" class="w-4 h-4" />
+              </button>
+
             </div>
           </div>
           <h4 :class="['font-medium text-base mb-1 truncate', themeStore.dark ? 'text-white' : 'text-gray-900']">{{
@@ -70,13 +76,44 @@
     <NotificationComponent v-if="showNotification" :type="notificationType" :message="notificationMessage"
       :duration="4000" class="fixed top-21 right-0 z-[9999] w-[420px] max-w-full"
       style="border-radius: 1.5rem 0 0 1.5rem;" />
+
+    <!-- Modal para mover archivo de categoría -->
+    <div v-if="showMoveModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40">
+      <div
+        :class="[themeStore.dark ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-900', 'rounded-2xl p-8 w-full max-w-md shadow-lg relative']">
+        <button @click="closeMoveModal" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <h3 class="text-lg font-bold mb-4">Mover archivo a otra categoría</h3>
+        <div class="mb-4">
+          <div class="mb-2"><span class="font-semibold">Archivo:</span> {{ selectedFile?.name }}</div>
+          <div class="mb-2"><span class="font-semibold">Categoría actual:</span> {{ selectedFile?.category }}</div>
+          <label class="block mb-1 font-medium">Nueva categoría:</label>
+          <select v-model="targetCategory" class="w-full rounded-lg border px-3 py-2 mt-1"
+            :class="themeStore.dark ? 'bg-neutral-800 text-white border-white/20' : 'bg-white text-gray-900 border-gray-300'">
+            <option v-for="cat in allCategories" :key="cat" :value="cat" :disabled="cat === selectedFile?.category">{{
+              cat }}</option>
+          </select>
+        </div>
+        <button @click="moveFileCategory" :disabled="!targetCategory || targetCategory === selectedFile?.category"
+          class="w-full py-2 rounded-lg font-semibold mt-2 transition-colors cursor-pointer" :class="[
+            (!targetCategory || targetCategory === selectedFile?.category)
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : (themeStore.dark ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-500 hover:bg-green-600 text-white')
+          ]">
+          Confirmar cambio de categoría
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import DashboardHeader from '@/components/DashboardHeader.vue'
-import { Download, Eye, FileX, BookOpen, Folder, Brain, Target } from 'lucide-vue-next'
+import { Download, Eye, FileX, BookOpen, Folder, Brain, Target, Pencil } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
 import { computed, ref } from 'vue'
 import { useThemeStore } from '@/stores/theme'
@@ -150,6 +187,46 @@ const notificationMessage = ref('')
 function viewDocument(id: number) {
   // Aquí deberías usar la lógica real de vista
   alert('Ver documento ' + id)
+}
+
+// --- Cambiar categoría de archivo ---
+const showMoveModal = ref(false)
+const selectedFile = ref<any>(null)
+const targetCategory = ref('')
+const allCategories = computed(() => categoriesStore.categories)
+
+function openMoveModal(doc: any) {
+  selectedFile.value = doc
+  targetCategory.value = ''
+  showMoveModal.value = true
+}
+function closeMoveModal() {
+  showMoveModal.value = false
+  selectedFile.value = null
+  targetCategory.value = ''
+}
+
+async function moveFileCategory() {
+  if (!selectedFile.value || !targetCategory.value || targetCategory.value === selectedFile.value.category) return
+  try {
+    await DocumentService.moveFile({
+      filename: selectedFile.value.name,
+      source_folder: selectedFile.value.category,
+      target_folder: targetCategory.value
+    })
+    showNotification.value = true
+    notificationType.value = 'success'
+    notificationMessage.value = `El archivo "${selectedFile.value.name}" se ha movido a "${targetCategory.value}" correctamente.`
+    // Actualizar documentos y cerrar modal
+    await documentsStore.fetchDocuments()
+    closeMoveModal()
+    setTimeout(() => { showNotification.value = false }, 4000)
+  } catch (err) {
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'Error al mover el archivo de categoría.'
+    setTimeout(() => { showNotification.value = false }, 4000)
+  }
 }
 function downloadAll() {
   const nombreCategoria = category.value.name
