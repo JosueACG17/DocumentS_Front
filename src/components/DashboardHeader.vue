@@ -25,19 +25,19 @@
           <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
             v-if="themeStore.dark">
             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span class="text-sm text-gray-300">{{ totalDocuments }} documentos</span>
+            <span class="text-sm text-gray-300">{{ totalDocs }} documentos</span>
           </div>
           <div class="flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2" v-else>
             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span class="text-sm text-gray-700">{{ totalDocuments }} documentos</span>
+            <span class="text-sm text-gray-700">{{ totalDocs }} documentos</span>
           </div>
 
           <!-- Botón de cambio de tema -->
           <button @click="themeStore.toggleTheme()"
             class="p-2 rounded-full transition-colors focus:outline-none cursor-pointer"
             :class="themeStore.dark ? 'bg-white/10 hover:bg-white/20 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'">
-            <svg v-if="themeStore.dark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <svg v-if="themeStore.dark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <circle cx="12" cy="12" r="5" stroke="currentColor" />
               <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-linecap="round" />
               <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-linecap="round" />
@@ -64,11 +64,10 @@
 <script setup lang="ts">
 import { FileText } from 'lucide-vue-next'
 import { useThemeStore } from '@/stores/theme'
-
-interface Props {
-  totalDocuments: number
-}
+import { useDocumentsStore } from '@/stores/documents'
+import { computed } from 'vue'
 
 const themeStore = useThemeStore()
-defineProps<Props>()
+const documentsStore = useDocumentsStore()
+const totalDocs = computed(() => documentsStore.documents.length)
 </script>

@@ -58,7 +58,7 @@
           <h4 :class="['font-medium text-base mb-1 truncate', themeStore.dark ? 'text-white' : 'text-gray-900']">{{
             doc.name }}</h4>
           <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{
-            doc.extension.toUpperCase()}} • {{ doc.size }} • {{ doc.category }}</p>
+            doc.extension.toUpperCase() }} • {{ doc.size }} • {{ doc.category }}</p>
         </div>
       </div>
       <div v-else
@@ -67,6 +67,9 @@
         <p class="text-lg">No hay documentos en esta categoría.</p>
       </div>
     </div>
+    <NotificationComponent v-if="showNotification" :type="notificationType" :message="notificationMessage"
+      :duration="4000" class="fixed top-21 right-0 z-[9999] w-[420px] max-w-full"
+      style="border-radius: 1.5rem 0 0 1.5rem;" />
   </div>
 </template>
 
@@ -75,9 +78,11 @@ import { useRouter, useRoute } from 'vue-router'
 import DashboardHeader from '@/components/DashboardHeader.vue'
 import { Download, Eye, FileX, BookOpen, Folder, Brain, Target } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
+import { DocumentService } from '@/services/DocumentService'
+import NotificationComponent from '@/components/NotificationComponent.vue'
 import type { FunctionalComponent } from 'vue'
 
 const themeStore = useThemeStore()
@@ -89,6 +94,11 @@ function goHome() {
   router.push('/')
 }
 
+// Notificación global
+const showNotification = ref(false)
+const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
+const notificationMessage = ref('')
+
 // Mapeo de iconos y colores igual que en DashComponent
 const categoryIcons: Record<string, FunctionalComponent> = {
   'Oficios y Comunicaciones Oficiales': Folder,
@@ -99,6 +109,7 @@ const categoryIcons: Record<string, FunctionalComponent> = {
   'Actas y Acuerdos': BookOpen,
   'Sin categoría': Folder,
 }
+
 const categoryGradients: Record<string, { iconBg: string; gradient: string; progressColor: string }> = {
   'Oficios y Comunicaciones Oficiales': {
     iconBg: 'bg-gradient-to-r from-blue-500 to-indigo-500',
@@ -153,28 +164,54 @@ const category = computed(() => ({
 const documents = computed(() => {
   return documentsStore.documents
     .map((doc, idx) => ({
-      id: idx + 1, // Si tienes un id real, úsalo
+      id: idx + 1,
       name: doc.filename,
       category: doc.categories[0] || 'Sin categoría',
       extension: doc.filename.split('.').pop() || '',
       size: doc.content ? `${(doc.content.length / 1024).toFixed(1)} KB` : '',
-      date: '', // Si tienes fecha, mapea aquí
+      date: '',
     }))
     .filter(doc => doc.category === categoryName)
 })
 
 const totalDocuments = computed(() => documentsStore.documents.length)
 
-function downloadDocument(id: number) {
-  // Aquí deberías usar la lógica real de descarga
-  alert('Descargar documento ' + id)
-}
 function viewDocument(id: number) {
   // Aquí deberías usar la lógica real de vista
   alert('Ver documento ' + id)
 }
 function downloadAll() {
-  // Aquí deberías usar la lógica real de descarga masiva
-  alert('Descargar todos los documentos de la categoría')
+  const nombreCategoria = category.value.name
+  DocumentService.downloadCategoryZip(nombreCategoria)
+    .then(response => {
+      console.log('Respuesta de descarga por categoría:', response)
+      const blob = response instanceof Blob ? response : response?.data
+      if (blob instanceof Blob) {
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `${nombreCategoria}.zip`)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        showNotification.value = true
+        notificationType.value = 'success'
+        notificationMessage.value = `¡Descarga de "${nombreCategoria}" iniciada!`
+        setTimeout(() => { showNotification.value = false }, 4000)
+      } else {
+        console.error('La respuesta no es un Blob:', response)
+        showNotification.value = true
+        notificationType.value = 'error'
+        notificationMessage.value = 'La respuesta no es un archivo descargable.'
+        setTimeout(() => { showNotification.value = false }, 4000)
+      }
+    })
+    .catch(err => {
+      console.error('Error al descargar por categoría:', err)
+      showNotification.value = true
+      notificationType.value = 'error'
+      notificationMessage.value = 'Error al descargar los documentos de la categoría'
+      setTimeout(() => { showNotification.value = false }, 4000)
+    })
 }
 </script>

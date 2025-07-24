@@ -1,4 +1,7 @@
 <template>
+  <NotificationComponent v-if="showNotification" :type="notificationType" :message="notificationMessage"
+    :duration="4000" class="fixed top-8 right-0 z-[9999] w-[420px] max-w-full"
+    style="border-radius: 1.5rem 0 0 1.5rem;" />
   <div
     :class="['min-h-screen transition-colors duration-300', themeStore.dark ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-900']">
     <DashboardHeader :total-documents="totalDocuments" />
@@ -48,7 +51,7 @@
 
           <!-- Botón Descargar Todo -->
           <button v-if="filteredDocuments.length > 0" @click="downloadAll"
-            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition-colors whitespace-nowrap"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition-colors whitespace-nowrap cursor-pointer"
             :class="themeStore.dark
               ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400'
               : 'bg-blue-100 hover:bg-blue-200 text-blue-600'">
@@ -88,38 +91,30 @@
         </div>
       </div>
 
-      <div
-  v-else
-  :class="[
-    'flex flex-col items-center justify-center py-24 px-6 space-y-6  mx-auto text-center rounded-lg shadow-lg transition-colors duration-500',
-    themeStore.dark ? 'bg-neutral-800 text-gray-400' : 'bg-gray-100 text-gray-700'
-  ]"
->
-  <FileX
-    :class="[
-      'w-24 h-24 mb-4',
-      themeStore.dark ? 'text-red-500 animate-bounce' : 'text-red-400 animate-bounce'
-    ]"
-  />
-  <h3 class="text-2xl font-semibold tracking-tight select-none">
-    No encontramos lo que buscas
-  </h3>
-  <p class="text-sm max-w-xs mx-auto text-gray-500 dark:text-gray-400">
-    Parece que no hay documentos que coincidan con tu búsqueda o filtro.<br />
-    Intenta cambiar los términos de búsqueda o los filtros para encontrar resultados.
-  </p>
-  <button
-    @click="resetFilters"
-    :class="[
-      'mt-4 px-5 py-2 rounded-md font-semibold shadow-md transition-colors duration-300 cursor-pointer',
-      themeStore.dark
-        ? 'bg-red-600 hover:bg-red-700 text-white'
-        : 'bg-red-400 hover:bg-red-500 text-white'
-    ]"
-  >
-    Limpiar filtros
-  </button>
-</div>
+      <div v-else :class="[
+        'flex flex-col items-center justify-center py-24 px-6 space-y-6  mx-auto text-center rounded-lg shadow-lg transition-colors duration-500',
+        themeStore.dark ? 'bg-neutral-800 text-gray-400' : 'bg-gray-100 text-gray-700'
+      ]">
+        <FileX :class="[
+          'w-24 h-24 mb-4',
+          themeStore.dark ? 'text-red-500 animate-bounce' : 'text-red-400 animate-bounce'
+        ]" />
+        <h3 class="text-2xl font-semibold tracking-tight select-none">
+          No encontramos lo que buscas
+        </h3>
+        <p class="text-sm max-w-xs mx-auto text-gray-500 dark:text-gray-400">
+          Parece que no hay documentos que coincidan con tu búsqueda o filtro.<br />
+          Intenta cambiar los términos de búsqueda o los filtros para encontrar resultados.
+        </p>
+        <button @click="resetFilters" :class="[
+          'mt-4 px-5 py-2 rounded-md font-semibold shadow-md transition-colors duration-300 cursor-pointer',
+          themeStore.dark
+            ? 'bg-red-600 hover:bg-red-700 text-white'
+            : 'bg-red-400 hover:bg-red-500 text-white'
+        ]">
+          Limpiar filtros
+        </button>
+      </div>
 
 
     </div>
@@ -136,6 +131,8 @@ import { CATEGORIES_DATA } from '@/constants/mockData'
 import type { Document } from '@/types'
 import { useDocumentsStore } from '@/stores/documents'
 import { useThemeStore } from '@/stores/theme'
+import { DocumentService } from '@/services/DocumentService'
+import NotificationComponent from '@/components/NotificationComponent.vue'
 
 const themeStore = useThemeStore()
 const router = useRouter()
@@ -147,6 +144,11 @@ function goHome() {
 const totalDocuments = CATEGORIES_DATA.reduce((acc, c) => acc + c.count, 0)
 
 const documentsStore = useDocumentsStore()
+
+// Notificación global
+const showNotification = ref(false)
+const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
+const notificationMessage = ref('')
 
 // Mapea DocumentData a Document para la vista
 const allDocuments = computed<Document[]>(() => {
@@ -186,8 +188,49 @@ const filteredDocuments = computed(() => {
   return docs
 })
 
-function downloadAll() {
-  alert('Descargar todos los documentos')
+async function downloadAll() {
+  try {
+    const response = await DocumentService.downloadAllDocuments()
+    // El endpoint retorna un Blob directamente, no response.data
+    console.log('Respuesta de descarga:', response)
+    if (response instanceof Blob) {
+      const url = window.URL.createObjectURL(response)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'documentos.zip')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showNotification.value = true
+      notificationType.value = 'success'
+      notificationMessage.value = '¡Descarga iniciada!'
+      setTimeout(() => { showNotification.value = false }, 4000)
+    } else if (response && response.data instanceof Blob) {
+      const url = window.URL.createObjectURL(response.data)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'documentos.zip')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showNotification.value = true
+      notificationType.value = 'success'
+      notificationMessage.value = '¡Descarga iniciada!'
+      setTimeout(() => { showNotification.value = false }, 4000)
+    } else {
+      console.error('La respuesta no es un Blob:', response)
+      showNotification.value = true
+      notificationType.value = 'error'
+      notificationMessage.value = 'La respuesta no es un archivo descargable.'
+      setTimeout(() => { showNotification.value = false }, 4000)
+    }
+  } catch (err) {
+    console.error('Error al descargar:', err)
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'Error al descargar los documentos'
+    setTimeout(() => { showNotification.value = false }, 4000)
+  }
 }
 
 function downloadDocument(id: number) {
