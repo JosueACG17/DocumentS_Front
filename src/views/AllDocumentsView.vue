@@ -40,9 +40,9 @@
               :class="themeStore.dark
                 ? 'bg-white/10 text-white border-white/20'
                 : 'bg-white text-gray-900 border-gray-300'">
-              <option value="" class="bg-black">Todas las extensiones</option>
-              <option value="pdf" class="bg-black">PDF</option>
-              <option value="docx" class="bg-black">Word</option>
+              <option value="" :class="themeStore.dark ? 'bg-black' : 'bg-white '">Todas las extensiones</option>
+              <option value="pdf" :class="themeStore.dark ? 'bg-black' : 'bg-white '">PDF</option>
+              <option value="docx" :class="themeStore.dark ? 'bg-black' : 'bg-white '">Word</option>
             </select>
           </div>
 

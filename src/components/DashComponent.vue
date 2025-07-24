@@ -3,6 +3,10 @@
     'min-h-screen transition-colors duration-300',
     themeStore.dark ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-900'
   ]">
+    <!-- Notificación global -->
+    <NotificationComponent v-if="showNotification" :type="notificationType" :message="notificationMessage"
+      :duration="4000" class="fixed top-8 right-0 z-[9999] w-[420px] max-w-full"
+      style="border-radius: 1.5rem 0 0 1.5rem;" />
     <!-- Header -->
     <DashboardHeader :total-documents="totalDocuments" />
 
@@ -18,7 +22,8 @@
         <!-- Upload & Categorías alineados -->
         <div class="col-span-1 lg:col-span-3 w-full">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <FileUploadSection class="w-full h-full" @file-uploaded="handleFileUploaded" />
+            <FileUploadSection class="w-full h-full" @file-uploaded="handleFileUploaded"
+              @showNotification="handleShowNotification" />
             <CategoriesGrid class="w-full h-full" :categories="categories" :selected-category="selectedCategory"
               :total-documents="totalDocuments" />
           </div>
@@ -34,7 +39,7 @@
       <!-- K-Means Analysis Section -->
       <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <KMeansAnalysis :is-analyzing="isAnalyzing" :kmeans-status="kmeansStatus"
-          :kmeans-status-color="kmeansStatusColor" :results="kmeansResults" @run-analysis="runKMeansAnalysis" />
+          :kmeans-status-color="kmeansStatusColor" :results="kmeansResults" @run-analysis="handleRunAnalysis" />
         <KMeansVisualization :results="kmeansResults" />
       </div>
     </div>
@@ -54,6 +59,7 @@ import CategoriesGrid from '@/components/CategoriesGrid.vue'
 import DocumentsList from '@/components/DocumentsList.vue'
 import KMeansAnalysis from '@/components/KMeansAnalysis.vue'
 import KMeansVisualization from '@/components/KMeansVisualization.vue'
+import NotificationComponent from '@/components/NotificationComponent.vue'
 
 // Composables
 import { useDocuments } from '@/composables/useDocuments'
@@ -77,6 +83,9 @@ const {
 
 const viewMode = ref('list')
 const selectedCategory = ref('')
+const showNotification = ref(false)
+const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
+const notificationMessage = ref('')
 
 // Carga documentos cuando monte el componente
 onMounted(() => {
@@ -165,9 +174,25 @@ const categories = computed(() => {
   })
 })
 
-// Actualiza categorías al subir archivo
-const handleFileUploaded = (file: File) => {
+// Actualiza categorías al subir archivo y refresca el store
+const handleFileUploaded = async (file: File) => {
   addDocument(file)
+  await documentsStore.fetchDocuments()
+}
+
+// Muestra la notificación global
+function handleShowNotification(type: string, message: string) {
+  notificationType.value = type as any
+  notificationMessage.value = message
+  showNotification.value = true
+  setTimeout(() => { showNotification.value = false }, 2000)
+}
+
+// Notificación al ejecutar análisis
+function handleRunAnalysis() {
+  showNotification.value = true
+  runKMeansAnalysis()
+  setTimeout(() => { showNotification.value = false }, 2000)
 }
 
 const activeCategories = computed(() => {

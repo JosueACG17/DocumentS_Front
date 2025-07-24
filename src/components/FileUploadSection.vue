@@ -39,18 +39,18 @@
 
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/theme'
-
 import { Upload, FileText } from 'lucide-vue-next'
 import { useFileUpload } from '@/composables/useFileUpdload'
+import { DocumentService } from '@/services/DocumentService'
+import { ref } from 'vue'
 
 interface Emits {
   (e: 'fileUploaded', file: File): void
+  (e: 'showNotification', type: string, message: string): void
 }
 
 const emit = defineEmits<Emits>()
-
 const themeStore = useThemeStore()
-
 const {
   uploadProgress,
   fileInput,
@@ -59,11 +59,41 @@ const {
   handleFileDrop: baseHandleFileDrop
 } = useFileUpload()
 
-const handleFileUpload = (event: Event) => {
-  baseHandleFileUpload(event, (file) => emit('fileUploaded', file))
+const isUploading = ref(false)
+
+const handleFileUpload = async (event: Event) => {
+  baseHandleFileUpload(event, async (file) => {
+    if (!file) return
+    isUploading.value = true
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      await DocumentService.uploadDocument(formData)
+      emit('showNotification', 'success', '¡Documento subido exitosamente!')
+      emit('fileUploaded', file)
+    } catch (err) {
+      emit('showNotification', 'error', 'Error al subir el documento')
+    } finally {
+      isUploading.value = false
+    }
+  })
 }
 
-const handleFileDrop = (event: DragEvent) => {
-  baseHandleFileDrop(event, (file) => emit('fileUploaded', file))
+const handleFileDrop = async (event: DragEvent) => {
+  baseHandleFileDrop(event, async (file) => {
+    if (!file) return
+    isUploading.value = true
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      await DocumentService.uploadDocument(formData)
+      emit('showNotification', 'success', '¡Documento subido exitosamente!')
+      emit('fileUploaded', file)
+    } catch (err) {
+      emit('showNotification', 'error', 'Error al subir el documento')
+    } finally {
+      isUploading.value = false
+    }
+  })
 }
 </script>

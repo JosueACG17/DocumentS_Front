@@ -23,7 +23,7 @@
         <div class="w-3 h-3 rounded-full" :class="kmeansStatusColor"></div>
       </div>
 
-      <button @click="$emit('runAnalysis')" :disabled="isAnalyzing"
+      <button @click="handleRunAnalysis" :disabled="isAnalyzing"
         class="cursor-pointer w-full py-3 bg-gradient-to-r from-blue-500 to-slate-500 rounded-xl text-white font-medium hover:from-blue-600 hover:to-slate-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
         <component :is="isAnalyzing ? 'Loader' : 'Play'" :class="isAnalyzing ? 'animate-spin' : ''"
           class="w-4 h-4 mr-2" />
@@ -41,7 +41,7 @@
         ]">
           <div class="flex items-center justify-between mb-2">
             <span :class="['font-medium', themeStore.dark ? 'text-white' : 'text-gray-900']">Grupo {{ index + 1
-              }}</span>
+            }}</span>
             <span :class="['text-sm', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ cluster.count }}
               docs</span>
           </div>
@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-
+import { ref } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { Brain } from 'lucide-vue-next'
 import type { KMeansCluster } from '@/types'
@@ -78,5 +78,12 @@ interface Emits {
 
 const themeStore = useThemeStore()
 defineProps<Props>()
-defineEmits<Emits>()
+const emit = defineEmits<Emits>()
+
+const showNotification = ref(false)
+
+function handleRunAnalysis() {
+  showNotification.value = true
+  emit('runAnalysis')
+}
 </script>
