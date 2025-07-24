@@ -50,6 +50,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
+import { useCategoriesStore } from '@/stores/categories'
+import { randomInt } from '@/utils/fileUtils'
 
 // Components
 import DashboardHeader from '@/components/DashboardHeader.vue'
@@ -71,6 +73,7 @@ import { BookOpen, Folder, Brain, Target } from 'lucide-vue-next'
 // Theme
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
+const categoriesStore = useCategoriesStore()
 
 const { addDocument, downloadDocument, viewDocument } = useDocuments()
 const {
@@ -90,63 +93,27 @@ const notificationMessage = ref('')
 // Carga documentos cuando monte el componente
 onMounted(() => {
   documentsStore.fetchDocuments()
+  categoriesStore.fetchCategories()
 })
 
 // Total documentos basado en la cantidad real de documentos cargados
 const totalDocuments = computed(() => documentsStore.documents.length)
+const totalCategories = computed(() => categoriesStore.categories.length)
 
-// Mapeo de iconos y colores por categoría real
-import type { FunctionalComponent } from 'vue';
-const categoryIcons: Record<string, FunctionalComponent> = {
-  'Oficios y Comunicaciones Oficiales': Folder,
-  'Informes y Reportes': BookOpen,
-  'Expedientes Técnicos y Proyectos': Brain,
-  'Documentación Financiera y Presupuestaria': Target,
-  'Contratos y Convenios': Folder,
-  'Actas y Acuerdos': BookOpen,
-  'Sin categoría': Folder,
-}
-
-const categoryGradients: Record<string, { iconBg: string; gradient: string; progressColor: string }> = {
-  'Oficios y Comunicaciones Oficiales': {
-    iconBg: 'bg-gradient-to-r from-blue-500 to-indigo-500',
-    gradient: 'from-blue-500 to-indigo-500',
-    progressColor: 'bg-blue-500',
-  },
-  'Informes y Reportes': {
-    iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500',
-    gradient: 'from-green-500 to-emerald-500',
-    progressColor: 'bg-green-500',
-  },
-  'Expedientes Técnicos y Proyectos': {
-    iconBg: 'bg-gradient-to-r from-purple-500 to-pink-500',
-    gradient: 'from-purple-500 to-pink-500',
-    progressColor: 'bg-purple-500',
-  },
-  'Documentación Financiera y Presupuestaria': {
-    iconBg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
-    gradient: 'from-yellow-500 to-orange-500',
-    progressColor: 'bg-yellow-500',
-  },
-  'Contratos y Convenios': {
-    iconBg: 'bg-gradient-to-r from-cyan-500 to-blue-400',
-    gradient: 'from-cyan-500 to-blue-400',
-    progressColor: 'bg-cyan-500',
-  },
-  'Actas y Acuerdos': {
-    iconBg: 'bg-gradient-to-r from-pink-500 to-red-500',
-    gradient: 'from-pink-500 to-red-500',
-    progressColor: 'bg-pink-500',
-  },
-  'Sin categoría': {
-    iconBg: 'bg-gradient-to-r from-gray-400 to-gray-600',
-    gradient: 'from-gray-400 to-gray-600',
-    progressColor: 'bg-gray-400',
-  },
-}
+const iconList = [BookOpen, Folder, Brain, Target]
+const gradientList = [
+  { iconBg: 'bg-gradient-to-r from-blue-500 to-indigo-500', gradient: 'from-blue-500 to-indigo-500', progressColor: 'bg-blue-500' },
+  { iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500', gradient: 'from-green-500 to-emerald-500', progressColor: 'bg-green-500' },
+  { iconBg: 'bg-gradient-to-r from-purple-500 to-pink-500', gradient: 'from-purple-500 to-pink-500', progressColor: 'bg-purple-500' },
+  { iconBg: 'bg-gradient-to-r from-yellow-500 to-orange-500', gradient: 'from-yellow-500 to-orange-500', progressColor: 'bg-yellow-500' },
+  { iconBg: 'bg-gradient-to-r from-cyan-500 to-blue-400', gradient: 'from-cyan-500 to-blue-400', progressColor: 'bg-cyan-500' },
+  { iconBg: 'bg-gradient-to-r from-pink-500 to-red-500', gradient: 'from-pink-500 to-red-500', progressColor: 'bg-pink-500' },
+  { iconBg: 'bg-gradient-to-r from-gray-400 to-gray-600', gradient: 'from-gray-400 to-gray-600', progressColor: 'bg-gray-400' },
+]
 
 // Categorías con conteo real basado en documentos cargados
 const categories = computed(() => {
+  // Cuenta documentos por categoría
   const counts = documentsStore.documents.reduce<Record<string, number>>(
     (acc, doc) => {
       const cat = doc.categories?.[0] || 'Sin categoría'
@@ -155,15 +122,11 @@ const categories = computed(() => {
     },
     {}
   )
-
-  // Mapea objeto a array con icono y color único según la categoría
-  return Object.entries(counts).map(([name, count], idx) => {
-    const icon = categoryIcons[name] || BookOpen
-    const colors = categoryGradients[name] || {
-      iconBg: 'bg-gradient-to-r from-blue-500 to-indigo-500',
-      gradient: 'from-blue-500 to-indigo-500',
-      progressColor: 'bg-blue-500',
-    }
+  // Mapea las categorías del store, asignando icono y gradient aleatorio
+  return categoriesStore.categories.map((name, idx) => {
+    const count = counts[name] || 0
+    const icon = iconList[randomInt(0, iconList.length - 1)]
+    const colors = gradientList[randomInt(0, gradientList.length - 1)]
     return {
       id: idx + 1,
       name,
@@ -185,7 +148,7 @@ function handleShowNotification(type: string, message: string) {
   notificationType.value = type as any
   notificationMessage.value = message
   showNotification.value = true
-  setTimeout(() => { showNotification.value = false }, 2000)
+  setTimeout(() => { showNotification.value = false }, 4000)
 }
 
 // Notificación al ejecutar análisis
@@ -194,11 +157,6 @@ function handleRunAnalysis() {
   runKMeansAnalysis()
   setTimeout(() => { showNotification.value = false }, 2000)
 }
-
-const activeCategories = computed(() => {
-  const set = new Set(documentsStore.documents.map(doc => doc.categories?.[0] || 'Sin categoría'))
-  return Array.from(set)
-})
 
 const computedStats = computed(() => [
   {
@@ -210,7 +168,7 @@ const computedStats = computed(() => [
   },
   {
     label: 'Categorías Activas',
-    value: `${activeCategories.value.length}`,
+    value: totalCategories.value.toString(),
     icon: Folder,
     iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500',
     gradient: 'from-green-500 to-emerald-500',

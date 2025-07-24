@@ -83,84 +83,45 @@ import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
 import { DocumentService } from '@/services/DocumentService'
 import NotificationComponent from '@/components/NotificationComponent.vue'
-import type { FunctionalComponent } from 'vue'
+import { useCategoriesStore } from '@/stores/categories'
+import { randomInt } from '@/utils/fileUtils'
 
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
 const router = useRouter()
 const route = useRoute()
+const categoriesStore = useCategoriesStore()
 
-function goHome() {
-  router.push('/')
-}
+const iconList = [BookOpen, Folder, Brain, Target]
+const gradientList = [
+  { iconBg: 'bg-gradient-to-r from-blue-500 to-indigo-500', gradient: 'from-blue-500 to-indigo-500', progressColor: 'bg-blue-500' },
+  { iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500', gradient: 'from-green-500 to-emerald-500', progressColor: 'bg-green-500' },
+  { iconBg: 'bg-gradient-to-r from-purple-500 to-pink-500', gradient: 'from-purple-500 to-pink-500', progressColor: 'bg-purple-500' },
+  { iconBg: 'bg-gradient-to-r from-yellow-500 to-orange-500', gradient: 'from-yellow-500 to-orange-500', progressColor: 'bg-yellow-500' },
+  { iconBg: 'bg-gradient-to-r from-cyan-500 to-blue-400', gradient: 'from-cyan-500 to-blue-400', progressColor: 'bg-cyan-500' },
+  { iconBg: 'bg-gradient-to-r from-pink-500 to-red-500', gradient: 'from-pink-500 to-red-500', progressColor: 'bg-pink-500' },
+  { iconBg: 'bg-gradient-to-r from-gray-400 to-gray-600', gradient: 'from-gray-400 to-gray-600', progressColor: 'bg-gray-400' },
+]
 
-// Notificación global
-const showNotification = ref(false)
-const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
-const notificationMessage = ref('')
+import { onMounted } from 'vue'
+onMounted(() => {
+  categoriesStore.fetchCategories()
+})
 
-// Mapeo de iconos y colores igual que en DashComponent
-const categoryIcons: Record<string, FunctionalComponent> = {
-  'Oficios y Comunicaciones Oficiales': Folder,
-  'Informes y Reportes': BookOpen,
-  'Expedientes Técnicos y Proyectos': Brain,
-  'Documentación Financiera y Presupuestaria': Target,
-  'Contratos y Convenios': Folder,
-  'Actas y Acuerdos': BookOpen,
-  'Sin categoría': Folder,
-}
-
-const categoryGradients: Record<string, { iconBg: string; gradient: string; progressColor: string }> = {
-  'Oficios y Comunicaciones Oficiales': {
-    iconBg: 'bg-gradient-to-r from-blue-500 to-indigo-500',
-    gradient: 'from-blue-500 to-indigo-500',
-    progressColor: 'bg-blue-500',
-  },
-  'Informes y Reportes': {
-    iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500',
-    gradient: 'from-green-500 to-emerald-500',
-    progressColor: 'bg-green-500',
-  },
-  'Expedientes Técnicos y Proyectos': {
-    iconBg: 'bg-gradient-to-r from-purple-500 to-pink-500',
-    gradient: 'from-purple-500 to-pink-500',
-    progressColor: 'bg-purple-500',
-  },
-  'Documentación Financiera y Presupuestaria': {
-    iconBg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
-    gradient: 'from-yellow-500 to-orange-500',
-    progressColor: 'bg-yellow-500',
-  },
-  'Contratos y Convenios': {
-    iconBg: 'bg-gradient-to-r from-cyan-500 to-blue-400',
-    gradient: 'from-cyan-500 to-blue-400',
-    progressColor: 'bg-cyan-500',
-  },
-  'Actas y Acuerdos': {
-    iconBg: 'bg-gradient-to-r from-pink-500 to-red-500',
-    gradient: 'from-pink-500 to-red-500',
-    progressColor: 'bg-pink-500',
-  },
-  'Sin categoría': {
-    iconBg: 'bg-gradient-to-r from-gray-400 to-gray-600',
-    gradient: 'from-gray-400 to-gray-600',
-    progressColor: 'bg-gray-400',
-  },
-}
-
-// Obtener nombre de la categoría por id (asumiendo que el id es el índice+1 del mapeo)
 const categoryId = Number(route.params.id)
-const categoryNames = Object.keys(categoryIcons)
-const categoryName = categoryNames[categoryId - 1] || 'Sin categoría'
-const category = computed(() => ({
-  id: categoryId,
-  name: categoryName,
-  icon: categoryIcons[categoryName] || BookOpen,
-  ...categoryGradients[categoryName] || categoryGradients['Sin categoría'],
-}))
+const categoryName = categoriesStore.categories[categoryId - 1] || 'Sin categoría'
+const category = computed(() => {
+  const icon = iconList[randomInt(0, iconList.length - 1)]
+  const colors = gradientList[randomInt(0, gradientList.length - 1)]
+  return {
+    id: categoryId,
+    name: categoryName,
+    icon,
+    ...colors,
+  }
+})
 
 
-// Mapear documentos filtrados a la estructura usada en AllDocumentsView.vue
 const documents = computed(() => {
   return documentsStore.documents
     .map((doc, idx) => ({
@@ -176,6 +137,16 @@ const documents = computed(() => {
 
 const totalDocuments = computed(() => documentsStore.documents.length)
 
+function goHome() {
+  router.push('/')
+}
+
+// Notificación global
+const showNotification = ref(false)
+const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
+const notificationMessage = ref('')
+
+// Mapear documentos filtrados a la estructura usada en AllDocumentsView.vue
 function viewDocument(id: number) {
   // Aquí deberías usar la lógica real de vista
   alert('Ver documento ' + id)

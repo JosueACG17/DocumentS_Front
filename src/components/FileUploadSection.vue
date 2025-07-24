@@ -43,6 +43,7 @@ import { Upload, FileText } from 'lucide-vue-next'
 import { useFileUpload } from '@/composables/useFileUpdload'
 import { DocumentService } from '@/services/DocumentService'
 import { ref } from 'vue'
+import { useDocumentsStore } from '@/stores/documents'
 
 interface Emits {
   (e: 'fileUploaded', file: File): void
@@ -51,6 +52,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 const themeStore = useThemeStore()
+const documentsStore = useDocumentsStore()
 const {
   uploadProgress,
   fileInput,
@@ -61,9 +63,26 @@ const {
 
 const isUploading = ref(false)
 
+const checkDuplicate = (file: File) => {
+  // Extrae nombre y extensión
+  const fileName = file.name.split('.').slice(0, -1).join('.')
+  const fileExt = file.name.split('.').pop()?.toLowerCase()
+  // Busca en los documentos existentes
+  return documentsStore.documents.some(doc => {
+    const docName = doc.filename.split('.').slice(0, -1).join('.')
+    const docExt = doc.filename.split('.').pop()?.toLowerCase()
+    return docName === fileName && docExt === fileExt
+  })
+}
+
 const handleFileUpload = async (event: Event) => {
   baseHandleFileUpload(event, async (file) => {
     if (!file) return
+    // Verifica duplicado
+    if (checkDuplicate(file)) {
+      emit('showNotification', 'warning', 'No puedes subir documentos que ya han sido subidos.')
+      return
+    }
     isUploading.value = true
     const formData = new FormData()
     formData.append('file', file)
@@ -82,6 +101,11 @@ const handleFileUpload = async (event: Event) => {
 const handleFileDrop = async (event: DragEvent) => {
   baseHandleFileDrop(event, async (file) => {
     if (!file) return
+    // Verifica duplicado
+    if (checkDuplicate(file)) {
+      emit('showNotification', 'warning', 'No puedes subir documentos que ya han sido subidos.')
+      return
+    }
     isUploading.value = true
     const formData = new FormData()
     formData.append('file', file)
