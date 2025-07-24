@@ -7,7 +7,13 @@
       <h3 :class="['text-lg font-semibold flex items-center', themeStore.dark ? 'text-white' : 'text-gray-900']">
         <FolderOpen class="w-5 h-5 mr-2 text-blue-400" />
         Categorías de Documentos
+        <span class="ml-2 text-blue-400 text-base font-normal">({{ totalCategories }})</span>
       </h3>
+      <button v-if="categories.length > 6" @click="goToAllCategories"
+        class="ml-auto px-4 py-1 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer"
+        :class="themeStore.dark ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'">
+        Ver todas las categorías
+      </button>
     </div>
 
     <div v-if="categories.length === 0"
@@ -19,7 +25,7 @@
     </div>
 
     <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <div v-for="category in categories" :key="category.id" @click="goToCategory(category.id)" :class="[
+      <div v-for="category in categories.slice(0, 6)" :key="category.id" @click="goToCategory(category.id)" :class="[
         'relative group cursor-pointer rounded-xl p-4 transition-all duration-300 hover:scale-105',
         themeStore.dark
           ? 'bg-white/5 hover:bg-white/10'
@@ -51,11 +57,13 @@
 
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/theme'
+import { computed } from 'vue'
 
 import { FolderOpen } from 'lucide-vue-next'
 import type { Category } from '@/types'
 
 import { useRouter } from 'vue-router'
+
 
 interface Props {
   categories: Category[]
@@ -67,7 +75,8 @@ interface Emits {
   (e: 'categorySelected', categoryId: number): void
 }
 
-defineProps<Props>()
+
+const props = defineProps<Props>()
 defineEmits<Emits>()
 
 const router = useRouter()
@@ -75,4 +84,10 @@ const themeStore = useThemeStore()
 function goToCategory(id: number) {
   router.push({ name: 'category-documents', params: { id } })
 }
+
+function goToAllCategories() {
+  router.push({ name: 'all-categories' })
+}
+
+const totalCategories = computed(() => props.categories.length)
 </script>

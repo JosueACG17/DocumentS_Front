@@ -5,6 +5,8 @@ const CategoryDocumentsView = () => import('../views/CategoryDocumentsView.vue')
 
 const AllDocumentsView = () => import('../views/AllDocumentsView.vue')
 
+const AllCategoriesView = () => import('../views/AllCategoriesView.vue')
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -23,6 +25,11 @@ const router = createRouter({
       path: '/todos',
       name: 'all-documents',
       component: AllDocumentsView,
+    },
+    {
+      path: '/categorias',
+      name: 'all-categories',
+      component: AllCategoriesView,
     },
   ],
 })
