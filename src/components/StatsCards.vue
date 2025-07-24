@@ -11,7 +11,7 @@
       <div class="relative">
         <div class="flex items-center justify-between mb-4">
           <div :class="stat.iconBg" class="w-12 h-12 rounded-xl flex items-center justify-center">
-            <component :is="stat.icon" :class="themeStore.dark ? 'text-white' : 'text-gray-800'" class="w-6 h-6" />
+            <component :is="stat.icon" class="w-6 h-6 text-white" />
           </div>
           <div
             :class="[stat.trend === 'up' ? 'text-green-400' : 'text-red-400', themeStore.dark ? 'text-sm font-medium' : 'text-sm font-medium']">

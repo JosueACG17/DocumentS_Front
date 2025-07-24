@@ -21,7 +21,7 @@
           :class="category.gradient"></div>
         <div class="relative">
           <div :class="category.iconBg" class="w-10 h-10 rounded-lg flex items-center justify-center mb-3">
-            <component :is="category.icon" :class="themeStore.dark ? 'text-white' : 'text-gray-800'" class="w-5 h-5" />
+            <component :is="category.icon" class="w-5 h-5 text-white" />
           </div>
           <h4 :class="['font-medium text-sm mb-1', themeStore.dark ? 'text-white' : 'text-gray-900']">{{ category.name
             }}</h4>

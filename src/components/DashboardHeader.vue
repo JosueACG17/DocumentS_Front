@@ -5,8 +5,8 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
           <div
-            :class="['w-10 h-10 bg-gradient-to-r rounded-xl flex items-center justify-center', themeStore.dark ? 'from-purple-700 to-cyan-600' : 'from-purple-400 to-cyan-300']">
-            <FileText :class="themeStore.dark ? 'text-white' : 'text-gray-800'" class="w-6 h-6" />
+            :class="['w-10 h-10 bg-gradient-to-r rounded-xl flex items-center justify-center', themeStore.dark ? 'from-purple-700 to-cyan-600' : 'from-purple-700 to-cyan-600']">
+            <FileText class="w-6 h-6 text-white" />
           </div>
           <div>
             <h1

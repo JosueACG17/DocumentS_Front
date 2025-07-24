@@ -35,14 +35,14 @@
           themeStore.dark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100 border border-gray-300'
         ]">
           <div class="flex items-center space-x-4">
-            <div :class="getFileIcon(doc.extension).bg" class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
-              <component :is="getFileIcon(doc.extension).icon"
-                class="w-5 h-5" />
+            <div :class="getFileIcon(doc.extension).bg"
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
+              <component :is="getFileIcon(doc.extension).icon" class="w-5 h-5" />
             </div>
             <div>
               <h4 :class="['font-medium', themeStore.dark ? 'text-white' : 'text-gray-900']">{{ doc.name }}</h4>
               <p :class="['text-sm', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ doc.category }} • {{
-                doc.size }} • {{ doc.date }}</p>
+                doc.size }} • {{ doc.extension.toUpperCase()  }}</p>
             </div>
           </div>
           <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -76,7 +76,8 @@
             themeStore.dark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100 border border-gray-300'
           ]">
             <div class="flex items-center justify-between mb-3">
-              <div :class="getFileIcon(doc.extension).bg" class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
+              <div :class="getFileIcon(doc.extension).bg"
+                class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
                 <component :is="getFileIcon(doc.extension).icon" />
               </div>
               <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -95,8 +96,7 @@
               doc.name }}</h4>
             <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ doc.category }}</p>
             <div :class="['flex justify-between text-xs', themeStore.dark ? 'text-gray-500' : 'text-gray-400']">
-              <span>{{ doc.size }}</span>
-              <span>{{ doc.date }}</span>
+              <span>{{ doc.size }} • {{ doc.extension.toUpperCase()  }}</span>
             </div>
           </div>
         </div>
@@ -118,11 +118,12 @@
 import { useThemeStore } from '@/stores/theme'
 import { FileText, List, Grid, Download, Eye, FileX } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
-import { computed } from 'vue'
-import type { Document, ViewMode } from '@/types'
+
+import { computed, onMounted } from 'vue'
+import { useDocumentsStore } from '@/stores/documents'
+import type { ViewMode } from '@/types'
 
 interface Props {
-  documents: Document[]
   viewMode: ViewMode
 }
 
@@ -136,5 +137,23 @@ const props = defineProps<Props>()
 defineEmits<Emits>()
 
 const themeStore = useThemeStore()
-const lastDocuments = computed(() => props.documents.slice(0, 6))
+
+const documentsStore = useDocumentsStore()
+
+const lastDocuments = computed(() => {
+  return documentsStore.documents.slice(-6).reverse().map((doc, idx) => ({
+    id: idx + 1,
+    name: doc.filename,
+    category: doc.categories[0] || 'Sin categoría',
+    extension: doc.filename.split('.').pop() || '',
+    size: doc.content ? `${(doc.content.length / 1024).toFixed(1)} KB` : '',
+    date: '',
+  }))
+})
+
+onMounted(() => {
+  if (documentsStore.documents.length === 0) {
+    documentsStore.fetchDocuments()
+  }
+})
 </script>

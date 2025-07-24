@@ -45,7 +45,8 @@
           themeStore.dark ? 'bg-white/5 hover:bg-white/10 border-white/10' : 'bg-gray-50 hover:bg-gray-100 border-gray-300'
         ]">
           <div class="flex items-center justify-between mb-3">
-            <div :class="getFileIcon(doc.extension).bg" class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
+            <div :class="getFileIcon(doc.extension).bg"
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
               <component :is="getFileIcon(doc.extension).icon" />
             </div>
             <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -61,8 +62,7 @@
           </div>
           <h4 :class="['font-medium text-base mb-1 truncate', themeStore.dark ? 'text-white' : 'text-gray-900']">{{
             doc.name }}</h4>
-          <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ doc.size }} • {{ doc.date
-            }}</p>
+          <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ doc.extension.toUpperCase() }} • {{ doc.size }} • {{ doc.category }}</p>
         </div>
       </div>
       <div v-else
@@ -82,9 +82,10 @@ import DashboardHeader from '@/components/DashboardHeader.vue'
 import { FileText, Download, Eye, FileX } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
 import { useRouter } from 'vue-router'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { CATEGORIES_DATA } from '@/constants/mockData'
 import type { Document } from '@/types'
+import { useDocumentsStore } from '@/stores/documents'
 
 import { useThemeStore } from '@/stores/theme'
 const themeStore = useThemeStore()
@@ -96,15 +97,23 @@ function goHome() {
 
 const totalDocuments = CATEGORIES_DATA.reduce((acc, c) => acc + c.count, 0)
 
-// Simulación de todos los documentos
-const allDocuments = ref<Document[]>([
-  { id: 1, name: 'Tesis Final.pdf', category: 'Académicos', extension: 'pdf', size: '2.1 MB', date: '2025-07-20' },
-  { id: 2, name: 'Notas de Clase.docx', category: 'Académicos', extension: 'docx', size: '1.2 MB', date: '2025-07-18' },
-  { id: 3, name: 'Resumen.xlsx', category: 'Académicos', extension: 'xlsx', size: '800 KB', date: '2025-07-15' },
-  { id: 4, name: 'Contrato.pdf', category: 'Legales', extension: 'pdf', size: '1.5 MB', date: '2025-07-10' },
-  { id: 5, name: 'Factura.docx', category: 'Financieros', extension: 'docx', size: '900 KB', date: '2025-07-08' },
-  { id: 6, name: 'Manual.pdf', category: 'Técnicos', extension: 'pdf', size: '3.2 MB', date: '2025-07-05' },
-])
+const documentsStore = useDocumentsStore()
+
+// Mapea DocumentData a Document para la vista
+const allDocuments = computed<Document[]>(() => {
+  return documentsStore.documents.map((doc, idx) => ({
+    id: idx + 1, // Si tienes un id real, úsalo aquí
+    name: doc.filename,
+    category: doc.categories[0] || 'Sin categoría',
+    extension: doc.filename.split('.').pop() || '',
+    size: doc.content ? `${(doc.content.length / 1024).toFixed(1)} KB` : '',
+    date: '', // Si tienes fecha, mapea aquí
+  }))
+})
+
+onMounted(() => {
+  documentsStore.fetchDocuments()
+})
 
 const filter = ref('')
 const filteredDocuments = computed(() => {
