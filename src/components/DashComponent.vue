@@ -170,21 +170,22 @@ const handleFileUploaded = (file: File) => {
   addDocument(file)
 }
 
+const activeCategories = computed(() => {
+  const set = new Set(documentsStore.documents.map(doc => doc.categories?.[0] || 'Sin categoría'))
+  return Array.from(set)
+})
+
 const computedStats = computed(() => [
   {
     label: 'Total Documentos',
     value: totalDocuments.value.toString(),
-    change: '+0%',
-    trend: 'up',
     icon: BookOpen,
     iconBg: 'bg-gradient-to-r from-blue-500 to-cyan-500',
     gradient: 'from-blue-500 to-cyan-500',
   },
   {
     label: 'Categorías Activas',
-    value: '6',
-    change: '+2',
-    trend: 'up',
+    value: `${activeCategories.value.length}`,
     icon: Folder,
     iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500',
     gradient: 'from-green-500 to-emerald-500',
@@ -192,8 +193,6 @@ const computedStats = computed(() => [
   {
     label: 'Análisis K-Means',
     value: '4',
-    change: 'Nuevo',
-    trend: 'up',
     icon: Brain,
     iconBg: 'bg-gradient-to-r from-purple-500 to-pink-500',
     gradient: 'from-purple-500 to-pink-500',
@@ -201,8 +200,6 @@ const computedStats = computed(() => [
   {
     label: 'Precisión IA',
     value: '94.2%',
-    change: '+2.1%',
-    trend: 'up',
     icon: Target,
     iconBg: 'bg-gradient-to-r from-orange-500 to-red-500',
     gradient: 'from-orange-500 to-red-500',

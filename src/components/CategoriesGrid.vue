@@ -9,7 +9,16 @@
         Categorías de Documentos
       </h3>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+    <div v-if="categories.length === 0"
+      class="flex flex-col items-center justify-center gap-3 text-center py-10 px-4 rounded-xl border transition-all duration-300"
+      :class="themeStore.dark ? 'bg-white/5 border-white/10 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'">
+      <FolderOpen class="w-10 h-10 text-blue-400 opacity-70" />
+      <p class="text-base font-medium">No se encontraron categorías de archivos</p>
+      <p class="text-sm opacity-70">Sube documentos para comenzar a organizarlos automáticamente.</p>
+    </div>
+
+    <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div v-for="category in categories" :key="category.id" @click="goToCategory(category.id)" :class="[
         'relative group cursor-pointer rounded-xl p-4 transition-all duration-300 hover:scale-105',
         themeStore.dark
@@ -23,9 +32,11 @@
           <div :class="category.iconBg" class="w-10 h-10 rounded-lg flex items-center justify-center mb-3">
             <component :is="category.icon" class="w-5 h-5 text-white" />
           </div>
-          <h4 :class="['font-medium text-sm mb-1', themeStore.dark ? 'text-white' : 'text-gray-900']">{{ category.name
-            }}</h4>
-          <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ category.count }} docs
+          <h4 :class="['font-medium text-sm mb-1', themeStore.dark ? 'text-white' : 'text-gray-900']">
+            {{ category.name }}
+          </h4>
+          <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">
+            {{ category.count }} docs
           </p>
           <div :class="themeStore.dark ? 'w-full bg-gray-700 rounded-full h-1' : 'w-full bg-gray-200 rounded-full h-1'">
             <div :class="category.progressColor" class="h-1 rounded-full transition-all duration-500"
@@ -36,6 +47,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/theme'
