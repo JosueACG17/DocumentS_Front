@@ -70,7 +70,7 @@ const iconBg = computed(() => {
   }
 })
 const bgClass = computed(() =>
-  themeStore.dark ? 'bg-white/10' : 'bg-white/60'
+  themeStore.dark ? 'bg-neutral-900' : 'bg-white'
 )
 
 const borderClass = computed(() => {

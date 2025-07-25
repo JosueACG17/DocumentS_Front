@@ -7,7 +7,7 @@
       <h3 :class="['text-lg font-semibold flex items-center', themeStore.dark ? 'text-white' : 'text-gray-900']">
         <FolderOpen class="w-5 h-5 mr-2 text-blue-400" />
         Categorías de Documentos
-        <span class="ml-2 text-blue-400 text-base font-normal">({{ totalCategories }})</span>
+        <span class="ml-2 text-blue-500 text-base font-normal">({{ totalCategories }})</span>
       </h3>
       <button v-if="categories.length > 6" @click="goToAllCategories"
         class="ml-auto px-4 py-1 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer"

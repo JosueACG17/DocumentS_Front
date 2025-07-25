@@ -20,7 +20,6 @@ export const useDocumentsStore = defineStore('documents', {
       this.error = null
       try {
         const documents = await DocumentService.getAllDocuments()
-        console.log('Respuesta API documentos:', documents)
         this.documents = documents
       } catch (err) {
         this.error =

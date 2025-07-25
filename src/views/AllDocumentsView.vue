@@ -81,6 +81,11 @@
                 :class="[themeStore.dark ? 'bg-green-500/20 hover:bg-green-500/30' : 'bg-green-100 hover:bg-green-200', 'p-1.5 rounded-md transition-colors cursor-pointer']">
                 <Eye :class="themeStore.dark ? 'text-green-400' : 'text-green-600'" class="w-4 h-4" />
               </button>
+              <button @click="deleteDocument(doc.id)"
+                :class="[themeStore.dark ? 'bg-red-500/20 hover:bg-red-500/30' : 'bg-red-100 hover:bg-red-200', 'p-1.5 rounded-md transition-colors cursor-pointer']"
+                title="Eliminar documento">
+                <Trash2 :class="themeStore.dark ? 'text-red-400' : 'text-red-600'" class="w-4 h-4" />
+              </button>
             </div>
           </div>
           <h4 :class="['font-medium text-base mb-1 truncate', themeStore.dark ? 'text-white' : 'text-gray-900']">{{
@@ -123,7 +128,7 @@
 
 <script setup lang="ts">
 import DashboardHeader from '@/components/DashboardHeader.vue'
-import { FileText, Download, Eye, FileX, Search } from 'lucide-vue-next'
+import { FileText, Download, Eye, FileX, Search, Trash2 } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
@@ -239,5 +244,9 @@ function downloadDocument(id: number) {
 
 function viewDocument(id: number) {
   alert('Ver documento ' + id)
+}
+
+function deleteDocument(id: number) {
+  alert('Eliminar documento ' + id)
 }
 </script>

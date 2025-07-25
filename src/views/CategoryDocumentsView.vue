@@ -58,7 +58,11 @@
                 title="Mover a otra categoría">
                 <Pencil :class="themeStore.dark ? 'text-yellow-400' : 'text-yellow-600'" class="w-4 h-4" />
               </button>
-
+              <button @click="deleteDocument(doc.id)"
+                :class="[themeStore.dark ? 'bg-red-500/20 hover:bg-red-500/30' : 'bg-red-100 hover:bg-red-200', 'p-1.5 rounded-md transition-colors cursor-pointer']"
+                title="Eliminar documento">
+                <Trash2 :class="themeStore.dark ? 'text-red-400' : 'text-red-600'" class="w-4 h-4" />
+              </button>
             </div>
           </div>
           <h4 :class="['font-medium text-base mb-1 truncate', themeStore.dark ? 'text-white' : 'text-gray-900']">{{
@@ -132,7 +136,7 @@
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <span class="truncate">Categoría actual: <span class="font-semibold">{{ selectedFile?.category
-                }}</span></span>
+            }}</span></span>
           </div>
         </div>
 
@@ -187,7 +191,7 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import DashboardHeader from '@/components/DashboardHeader.vue'
-import { Download, Eye, FileX, BookOpen, Folder, Brain, Target, Pencil } from 'lucide-vue-next'
+import { Download, Eye, FileX, BookOpen, Folder, Brain, Target, Pencil, Trash2 } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
 import { computed, ref } from 'vue'
 import { useThemeStore } from '@/stores/theme'
@@ -261,6 +265,10 @@ const notificationMessage = ref('')
 function viewDocument(id: number) {
   // Aquí deberías usar la lógica real de vista
   alert('Ver documento ' + id)
+}
+
+function deleteDocument(id: number) {
+  alert('Eliminar documento ' + id)
 }
 
 // --- Cambiar categoría de archivo ---
