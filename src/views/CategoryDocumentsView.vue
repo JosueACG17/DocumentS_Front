@@ -25,6 +25,17 @@
             <h2 :class="['text-2xl font-bold', themeStore.dark ? 'text-white' : 'text-gray-900']">{{ category ?
               category.name : 'Categoría' }}</h2>
             <p :class="['text-sm', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">Documentos de la categoría</p>
+            <!-- Textos de entrenamiento de la categoría -->
+            <div v-if="categoryTexts.length > 0"
+              :class="['mt-2 p-3 rounded-lg', themeStore.dark ? 'bg-neutral-800 text-gray-200' : 'bg-gray-200 text-gray-700']">
+              <div class="font-semibold mb-1 text-xs uppercase tracking-wider opacity-70">Textos de entrenamiento</div>
+              <div class="text-xs opacity-90 space-y-1">
+                <p v-for="(text, idx) in categoryTexts" :key="idx">{{ text }}</p>
+              </div>
+            </div>
+            <div v-else-if="textsLoading" class="mt-2 text-xs italic opacity-70">Cargando textos de entrenamiento...
+            </div>
+            <div v-else-if="textsError" class="mt-2 text-xs text-red-500">{{ textsError }}</div>
           </div>
         </div>
         <button :class="[
@@ -189,6 +200,8 @@
 </template>
 
 <script setup lang="ts">
+// Exportar el servicio CategoriesService para uso externo
+import { CategoriesService } from '@/services/CategoriesService'
 import { useRouter, useRoute } from 'vue-router'
 import DashboardHeader from '@/components/DashboardHeader.vue'
 import { Download, Eye, FileX, BookOpen, Folder, Brain, Target, Pencil, Trash2 } from 'lucide-vue-next'
@@ -200,6 +213,7 @@ import { DocumentService } from '@/services/DocumentService'
 import NotificationComponent from '@/components/NotificationComponent.vue'
 import { useCategoriesStore } from '@/stores/categories'
 import { randomInt } from '@/utils/fileUtils'
+import { watch } from 'vue'
 
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
@@ -348,4 +362,32 @@ function downloadAll() {
       setTimeout(() => { showNotification.value = false }, 4000)
     })
 }
+// Textos de entrenamiento de la categoría
+const categoryTexts = ref<string[]>([])
+const textsLoading = ref(false)
+const textsError = ref('')
+
+async function fetchCategoryTexts(nombreCategoria: string) {
+  if (!nombreCategoria) return
+  textsLoading.value = true
+  textsError.value = ''
+  try {
+    const res = await CategoriesService.getTextsByCategory(nombreCategoria)
+    categoryTexts.value = Array.isArray(res) ? res : (res?.data ?? [])
+  } catch (err: any) {
+    textsError.value = typeof err === 'string' ? err : (err?.message || 'Error al obtener textos de entrenamiento')
+  } finally {
+    textsLoading.value = false
+  }
+}
+
+onMounted(() => {
+  categoriesStore.fetchCategories()
+  fetchCategoryTexts(categoryName)
+})
+
+// Si cambia la categoría, recargar textos
+watch(() => categoryName, (nuevo) => {
+  fetchCategoryTexts(nuevo)
+})
 </script>
