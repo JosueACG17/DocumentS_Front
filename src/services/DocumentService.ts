@@ -31,9 +31,9 @@ export const DocumentService = {
   },
 
   // GET /upload/download/file/?filename=... - Descargar archivo por nombre
-  downloadFileByName(filename: string, config?: AxiosRequestConfig) {
+  downloadFileByName(filename: string, category: string, config?: AxiosRequestConfig) {
     return genericRequest.get<Blob>(
-      `/upload/download/file/?filename=${encodeURIComponent(filename)}`,
+      `/upload/download/file/?filename=${encodeURIComponent(filename)}&category=${encodeURIComponent(category)}`,
       {
         ...config,
         responseType: 'blob',

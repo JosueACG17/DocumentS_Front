@@ -282,11 +282,73 @@ function viewDocument(id: number) {
 }
 
 function deleteDocument(id: number) {
-  alert('Eliminar documento ' + id)
+  const doc = documents.value.find(d => d.id === id)
+  if (!doc) return
+
+  // Confirmar eliminación
+  if (!confirm(`¿Estás seguro de que deseas eliminar "${doc.name}"?`)) return
+
+  // Buscar el documento real en el store para obtener su _id
+  const realDoc = documentsStore.documents.find(d => d.filename === doc.name)
+  if (!realDoc || !realDoc._id) {
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'No se pudo encontrar el ID del documento'
+    setTimeout(() => { showNotification.value = false }, 4000)
+    return
+  }
+
+  DocumentService.deleteDocument(realDoc._id)
+    .then(() => {
+      showNotification.value = true
+      notificationType.value = 'success'
+      notificationMessage.value = `Documento "${doc.name}" eliminado correctamente`
+      // Actualizar documentos
+      documentsStore.fetchDocuments()
+      setTimeout(() => { showNotification.value = false }, 4000)
+    })
+    .catch(err => {
+      console.error('Error al eliminar documento:', err)
+      showNotification.value = true
+      notificationType.value = 'error'
+      notificationMessage.value = 'Error al eliminar el documento'
+      setTimeout(() => { showNotification.value = false }, 4000)
+    })
 }
 
 function downloadDocument(id: number) {
-  alert('Descargar documento ' + id)
+  const doc = documents.value.find(d => d.id === id)
+  if (!doc) return
+
+  DocumentService.downloadFileByName(doc.name, doc.category)
+    .then(response => {
+      const blob = response instanceof Blob ? response : response?.data
+      if (blob instanceof Blob) {
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', doc.name)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        showNotification.value = true
+        notificationType.value = 'success'
+        notificationMessage.value = `¡Descarga de "${doc.name}" iniciada!`
+        setTimeout(() => { showNotification.value = false }, 4000)
+      } else {
+        showNotification.value = true
+        notificationType.value = 'error'
+        notificationMessage.value = 'La respuesta no es un archivo descargable.'
+        setTimeout(() => { showNotification.value = false }, 4000)
+      }
+    })
+    .catch(err => {
+      console.error('Error al descargar archivo:', err)
+      showNotification.value = true
+      notificationType.value = 'error'
+      notificationMessage.value = 'Error al descargar el archivo'
+      setTimeout(() => { showNotification.value = false }, 4000)
+    })
 }
 
 // --- Cambiar categoría de archivo ---

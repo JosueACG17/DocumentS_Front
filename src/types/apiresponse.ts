@@ -1,4 +1,5 @@
 export interface DocumentData {
+  _id: string
   filename: string
   categories: string[]
   content: string
