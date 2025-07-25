@@ -77,33 +77,107 @@
       :duration="4000" class="fixed top-21 right-0 z-[9999] w-[420px] max-w-full"
       style="border-radius: 1.5rem 0 0 1.5rem;" />
 
-    <!-- Modal para mover archivo de categoría -->
-    <div v-if="showMoveModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40">
-      <div
-        :class="[themeStore.dark ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-900', 'rounded-2xl p-8 w-full max-w-md shadow-lg relative']">
-        <button @click="closeMoveModal" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <!-- Modal para mover archivo de categoría - Versión Mejorada -->
+    <div v-if="showMoveModal"
+      class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+      <div :class="[
+        themeStore.dark
+          ? 'bg-neutral-800 text-white border-white/10'
+          : 'bg-white text-neutral-800 border-gray-200',
+        'rounded-xl p-6 w-full max-w-md border shadow-2xl relative transform transition-all duration-300 scale-100',
+        'max-h-[90vh] overflow-y-auto'
+      ]">
+        <!-- Close Button -->
+        <button @click="closeMoveModal" :class="[
+          themeStore.dark
+            ? 'hover:bg-neutral-700 text-neutral-300 '
+            : 'hover:bg-gray-100 text-gray-500',
+          'absolute top-4 right-4 p-1 rounded-full transition-colors cursor-pointer'
+        ]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h3 class="text-lg font-bold mb-4">Mover archivo a otra categoría</h3>
-        <div class="mb-4">
-          <div class="mb-2"><span class="font-semibold">Archivo:</span> {{ selectedFile?.name }}</div>
-          <div class="mb-2"><span class="font-semibold">Categoría actual:</span> {{ selectedFile?.category }}</div>
-          <label class="block mb-1 font-medium">Nueva categoría:</label>
-          <select v-model="targetCategory" class="w-full rounded-lg border px-3 py-2 mt-1"
-            :class="themeStore.dark ? 'bg-neutral-800 text-white border-white/20' : 'bg-white text-gray-900 border-gray-300'">
-            <option v-for="cat in allCategories" :key="cat" :value="cat" :disabled="cat === selectedFile?.category">{{
-              cat }}</option>
-          </select>
+
+        <!-- Header -->
+        <div class="flex items-start mb-6">
+          <div class="p-2 rounded-lg" :class="themeStore.dark ? 'bg-green-900/30' : 'bg-green-100'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-xl font-bold">Mover archivo</h3>
+            <p class="text-sm opacity-80 mt-1">Selecciona la nueva categoría para este archivo</p>
+          </div>
         </div>
+
+        <!-- File Info -->
+        <div class="space-y-3 mb-6">
+          <div class="flex items-center p-3 rounded-lg" :class="themeStore.dark ? 'bg-neutral-700/30' : 'bg-gray-50'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span class="truncate font-medium">{{ selectedFile?.name }}</span>
+          </div>
+
+          <div class="flex items-center p-3 rounded-lg" :class="themeStore.dark ? 'bg-neutral-700/30' : 'bg-gray-50'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span class="truncate">Categoría actual: <span class="font-semibold">{{ selectedFile?.category
+                }}</span></span>
+          </div>
+        </div>
+
+        <!-- Category Selector -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium mb-2">Nueva categoría</label>
+          <div class="relative">
+            <select v-model="targetCategory"
+              class="appearance-none w-full rounded-lg border px-4 py-3 pr-8 focus:ring-2 focus:outline-none transition-all"
+              :class="[
+                themeStore.dark
+                  ? 'bg-neutral-700 text-white border-white/20 focus:ring-green-500/50 focus:border-green-500'
+                  : 'bg-white text-gray-900 border-gray-300 focus:ring-green-500/30 focus:border-green-500'
+              ]">
+              <option value="" disabled selected>Selecciona una categoría</option>
+              <option v-for="cat in allCategories" :key="cat" :value="cat" :disabled="cat === selectedFile?.category"
+                class="py-2">
+                {{ cat }}
+              </option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
         <button @click="moveFileCategory" :disabled="!targetCategory || targetCategory === selectedFile?.category"
-          class="w-full py-2 rounded-lg font-semibold mt-2 transition-colors cursor-pointer" :class="[
+          class="w-full py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center cursor-pointer"
+          :class="[
             (!targetCategory || targetCategory === selectedFile?.category)
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : (themeStore.dark ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-500 hover:bg-green-600 text-white')
+              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              : (themeStore.dark
+                ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-green-500/20'
+                : 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-green-500/30'),
+            'group'
           ]">
-          Confirmar cambio de categoría
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 transition-transform group-hover:translate-x-1"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Confirmar movimiento
         </button>
       </div>
     </div>
