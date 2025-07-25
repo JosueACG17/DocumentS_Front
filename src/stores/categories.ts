@@ -27,5 +27,10 @@ export const useCategoriesStore = defineStore('categories', {
         this.loading = false
       }
     },
+    addCategory(nombre: string) {
+      if (!this.categories.includes(nombre)) {
+        this.categories.push(nombre)
+      }
+    },
   },
 })

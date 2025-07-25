@@ -271,6 +271,10 @@ function deleteDocument(id: number) {
   alert('Eliminar documento ' + id)
 }
 
+function downloadDocument(id: number) {
+  alert('Descargar documento ' + id)
+}
+
 // --- Cambiar categoría de archivo ---
 const showMoveModal = ref(false)
 const selectedFile = ref<any>(null)
