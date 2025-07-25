@@ -21,4 +21,9 @@ export const CategoriesService = {
   getTextsByCategory(category: string, config?: AxiosRequestConfig) {
     return genericRequest.get<string[]>(`/texts/${category}`, config)
   },
+
+  // POST /train-model - Entrenar modelo
+  trainModel(config?: AxiosRequestConfig) {
+    return genericRequest.post<{ message: string }>(`/train-model`, undefined, config)
+  },
 }

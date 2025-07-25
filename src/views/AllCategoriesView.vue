@@ -215,14 +215,15 @@ async function handleCreateCategory() {
 
   try {
     await CategoriesService.createTrainingExample({ category: categoryName, text })
+    await CategoriesService.trainModel()
     categoriesStore.addCategory(categoryName)
-    showNotification('success', 'Categoría creada y entrenada correctamente')
+    showNotification('success', 'Categoría creada y modelo entrenado correctamente')
     newCategory.value = ''
     newText.value = ''
     closeAddModal()
   } catch (error) {
     console.error(error)
-    showNotification('error', 'Error al crear la categoría')
+    showNotification('error', 'Error al crear la categoría o entrenar el modelo')
   }
 }
 
