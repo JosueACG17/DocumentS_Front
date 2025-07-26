@@ -36,10 +36,10 @@
       </div>
 
       <!-- K-Means Analysis Section -->
-      <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="mt-8 flex flex-col gap-8">
         <KMeansAnalysis :is-analyzing="isAnalyzing" :kmeans-status="kmeansStatus"
           :kmeans-status-color="kmeansStatusColor" :results="kmeansResults" @run-analysis="handleRunAnalysis" />
-        <KMeansVisualization :results="kmeansResults" />
+        <KMeansVisualization :results="kmeansResults" :graph-data="graphData" :clear-graph-data="clearGraphData" />
       </div>
     </div>
   </div>
@@ -81,7 +81,9 @@ const {
   kmeansStatus,
   kmeansResults,
   kmeansStatusColor,
+  graphData,
   runKMeansAnalysis,
+  clearGraphData,
 } = useKMeans()
 
 const viewMode = ref<ViewMode>('list')

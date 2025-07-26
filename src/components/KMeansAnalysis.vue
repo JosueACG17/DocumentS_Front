@@ -27,7 +27,7 @@
         class="cursor-pointer w-full py-3 bg-gradient-to-r from-blue-500 to-slate-500 rounded-xl text-white font-medium hover:from-blue-600 hover:to-slate-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
         <component :is="isAnalyzing ? 'Loader' : 'Play'" :class="isAnalyzing ? 'animate-spin' : ''"
           class="w-4 h-4 mr-2" />
-        {{ isAnalyzing ? 'Analizando...' : 'Ejecutar Análisis' }}
+        {{ getButtonText() }}
       </button>
     </div>
 
@@ -41,7 +41,7 @@
         ]">
           <div class="flex items-center justify-between mb-2">
             <span :class="['font-medium', themeStore.dark ? 'text-white' : 'text-gray-900']">Grupo {{ index + 1
-            }}</span>
+              }}</span>
             <span :class="['text-sm', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{ cluster.count }}
               docs</span>
           </div>
@@ -77,10 +77,23 @@ interface Emits {
 }
 
 const themeStore = useThemeStore()
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const showNotification = ref(false)
+
+function getButtonText(): string {
+  if (!props.isAnalyzing) return 'Ejecutar Análisis'
+
+  switch (props.kmeansStatus) {
+    case 'Entrenando modelo...':
+      return 'Entrenando modelo...'
+    case 'Obteniendo gráfica...':
+      return 'Obteniendo gráfica...'
+    default:
+      return 'Procesando...'
+  }
+}
 
 function handleRunAnalysis() {
   showNotification.value = true
