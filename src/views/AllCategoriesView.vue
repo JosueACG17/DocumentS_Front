@@ -60,41 +60,23 @@
       </div>
     </div>
 
-    <!--- Modal para agregar categoria -->
-    <div v-if="showAddModal"
-      class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
-      <div :class="[
-        themeStore.dark ? 'bg-neutral-800 text-white border-white/10' : 'bg-white text-gray-900 border-gray-200',
-        'rounded-xl p-6 w-full max-w-md border shadow-2xl relative transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto',
-      ]">
-        <!-- Botón cerrar -->
-        <button @click="closeAddModal" :class="[
-          themeStore.dark ? 'hover:bg-neutral-700 text-neutral-300' : 'hover:bg-gray-100 text-gray-500',
-          'absolute top-4 right-4 p-1 rounded-full transition-colors cursor-pointer',
-        ]" aria-label="Cerrar modal">
-          <X class="w-5 h-5" />
-        </button>
-
-        <!-- Header con icono -->
-        <div class="flex items-center mb-6">
-          <div :class="themeStore.dark ? 'bg-blue-900/30' : 'bg-blue-100'"
-            class="p-2 rounded-lg mr-3 flex items-center justify-center">
-            <Folder class="w-6 h-6 text-blue-500" />
-          </div>
-          <h3 class="text-xl font-bold">Agregar nueva categoría</h3>
-        </div>
-
-        <!-- Campo Nombre Categoría -->
+    <!-- Modal para agregar categoria -->
+    <BaseModal :visible="showAddModal" title="Agregar nueva categoría" :header-icon="Folder" icon-color="blue"
+      @close="closeAddModal">
+      <!-- Campo Nombre Categoría -->
+      <div>
         <label class="block mb-1 font-medium" for="category-name">Nombre de la categoría</label>
         <input id="category-name" v-model="newCategory" type="text" placeholder="Ej. Salud, Finanzas, etc." :class="[
-          'w-full mb-4 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2',
+          'w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2',
           themeStore.dark
             ? 'bg-neutral-700 border-neutral-600 focus:ring-blue-400'
             : 'bg-white border-gray-300 focus:ring-blue-500',
         ]" />
+      </div>
 
-        <!-- Campo Texto de ejemplo -->
-        <label class="block mb-1 font-medium" for="example-text">Texto de ejemplo</label>
+      <!-- Campo Texto de entrenamiento -->
+      <div>
+        <label class="block mb-1 font-medium" for="example-text">Texto de entrenamiento</label>
         <textarea id="example-text" v-model="newText" rows="4" placeholder="Ej. Tengo fiebre y dolor de cabeza..."
           :class="[
             'w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 resize-none',
@@ -102,16 +84,18 @@
               ? 'bg-neutral-700 border-neutral-600 focus:ring-blue-400'
               : 'bg-white border-gray-300 focus:ring-blue-500',
           ]"></textarea>
+      </div>
 
-        <!-- Botón Guardar -->
+      <!-- Botón Guardar -->
+      <template #actions>
         <button @click="handleCreateCategory"
-          class="w-full py-3 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2 transition-colors duration-200 mt-4 cursor-pointer"
+          class="w-full py-3 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer"
           :class="themeStore.dark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'">
           <Check class="w-6 h-6" />
           Guardar categoría
         </button>
-      </div>
-    </div>
+      </template>
+    </BaseModal>
 
 
     <!-- Notificaciones -->
@@ -124,9 +108,10 @@
 <script setup lang="ts">
 import DashboardHeader from '@/components/DashboardHeader.vue'
 import CustomNotification from '@/components/NotificationComponent.vue'
+import BaseModal from '@/components/BaseModal.vue'
 import { useThemeStore } from '@/stores/theme'
 import { useCategoriesStore } from '@/stores/categories'
-import { Folder, X, Check, Plus } from 'lucide-vue-next'
+import { Folder, Check, Plus } from 'lucide-vue-next'
 import { useDocumentsStore } from '@/stores/documents'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
