@@ -28,12 +28,12 @@
             <!-- Textos de entrenamiento de la categoría -->
             <div v-if="categoryTexts.length > 0"
               :class="['mt-2 p-3 rounded-lg', themeStore.dark ? 'bg-neutral-800 text-gray-200' : 'bg-gray-200 text-gray-700']">
-              <div class="font-semibold mb-1 text-xs uppercase tracking-wider opacity-70">Textos de entrenamiento</div>
+              <div class="font-semibold mb-1 text-xs uppercase tracking-wider opacity-70">Texto de entrenamiento</div>
               <div class="text-xs opacity-90 space-y-1">
                 <p v-for="(text, idx) in categoryTexts" :key="idx">{{ text }}</p>
               </div>
             </div>
-            <div v-else-if="textsLoading" class="mt-2 text-xs italic opacity-70">Cargando textos de entrenamiento...
+            <div v-else-if="textsLoading" class="mt-2 text-xs italic opacity-70">Cargando texto de entrenamiento...
             </div>
             <div v-else-if="textsError" class="mt-2 text-xs text-red-500">{{ textsError }}</div>
           </div>
@@ -147,7 +147,7 @@
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <span class="truncate">Categoría actual: <span class="font-semibold">{{ selectedFile?.category
-            }}</span></span>
+                }}</span></span>
           </div>
         </div>
 
@@ -196,6 +196,83 @@
         </button>
       </div>
     </div>
+
+    <!-- Modal de Previsualización de Documentos -->
+    <div v-if="showPreviewModal"
+      class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">
+      <div :class="[
+        themeStore.dark
+          ? 'bg-neutral-800 text-white border-white/10'
+          : 'bg-white text-neutral-800 border-gray-200',
+        'rounded-xl border shadow-2xl relative transform transition-all duration-300 scale-100',
+        'w-[95vw] h-[95vh] max-w-7xl max-h-[95vh] overflow-hidden flex flex-col'
+      ]">
+        <!-- Header del Modal -->
+        <div class="flex items-center justify-between p-6 border-b"
+          :class="themeStore.dark ? 'border-white/10' : 'border-gray-200'">
+          <div class="flex items-center space-x-3">
+            <div :class="getFileIcon(previewDocument?.extension || '').bg"
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
+              <component :is="getFileIcon(previewDocument?.extension || '').icon" class="w-6 h-6" />
+            </div>
+            <div>
+              <h3 class="text-xl font-bold">{{ previewDocument?.name }}</h3>
+              <p class="text-sm opacity-70">Previsualización del documento</p>
+            </div>
+          </div>
+          <button @click="closePreviewModal" :class="[
+            themeStore.dark
+              ? 'hover:bg-neutral-700 text-neutral-300'
+              : 'hover:bg-gray-100 text-gray-500',
+            'p-2 rounded-full transition-colors cursor-pointer'
+          ]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="flex-1 overflow-hidden">
+          <!-- Loading -->
+          <div v-if="previewLoading" class="flex items-center justify-center h-full">
+            <div class="flex flex-col items-center space-y-4">
+              <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-lg font-medium">Cargando previsualización...</p>
+            </div>
+          </div>
+
+          <!-- PDF Preview -->
+          <div v-else-if="previewType === 'pdf' && previewContent" class="h-full">
+            <VuePdfApp :pdf="previewContent" :config="{
+              sidebar: { thumbnails: true, outline: true },
+              toolbar: { toolbarViewerLeft: { findbar: true, previous: true, next: true, pageNumber: true } }
+            }" class="h-full w-full" />
+          </div>
+
+          <!-- DOCX Preview -->
+          <div v-else-if="previewType === 'docx' && previewContent" class="h-full overflow-auto p-8"
+            :class="themeStore.dark ? 'bg-neutral-900' : 'bg-gray-50'">
+            <div :class="[
+              'max-w-4xl mx-auto p-8 rounded-lg shadow-lg prose prose-lg',
+              themeStore.dark ? 'bg-neutral-700 prose-invert' : 'bg-white'
+            ]">
+              <div v-html="previewContent" class="docx-content"></div>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else class="flex items-center justify-center h-full">
+            <div class="text-center">
+              <FileX class="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p class="text-lg font-medium mb-2">No se pudo cargar la previsualización</p>
+              <p class="text-sm opacity-70">El documento no está disponible o el formato no es compatible</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -214,6 +291,8 @@ import NotificationComponent from '@/components/NotificationComponent.vue'
 import { useCategoriesStore } from '@/stores/categories'
 import { randomInt } from '@/utils/fileUtils'
 import { watch } from 'vue'
+import VuePdfApp from 'vue3-pdf-app'
+import mammoth from 'mammoth'
 
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
@@ -275,10 +354,74 @@ const showNotification = ref(false)
 const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 const notificationMessage = ref('')
 
+// Modal de previsualización
+const showPreviewModal = ref(false)
+const previewDocument = ref<any>(null)
+const previewContent = ref('')
+const previewType = ref<'pdf' | 'docx' | 'unsupported'>('pdf')
+const previewLoading = ref(false)
+
 // Mapear documentos filtrados a la estructura usada en AllDocumentsView.vue
-function viewDocument(id: number) {
-  // Aquí deberías usar la lógica real de vista
-  alert('Ver documento ' + id)
+async function viewDocument(id: number) {
+  const doc = documents.value.find(d => d.id === id)
+  if (!doc) return
+
+  const extension = doc.extension.toLowerCase()
+
+  // Verificar si es un tipo de archivo soportado
+  if (!['pdf', 'docx'].includes(extension)) {
+    showNotification.value = true
+    notificationType.value = 'warning'
+    notificationMessage.value = `La previsualización no está disponible para archivos .${extension.toUpperCase()}`
+    setTimeout(() => { showNotification.value = false }, 4000)
+    return
+  }
+
+  previewDocument.value = doc
+  previewType.value = extension as 'pdf' | 'docx'
+  previewLoading.value = true
+  showPreviewModal.value = true
+  previewContent.value = ''
+
+  try {
+    // Descargar el archivo para previsualización
+    const response = await DocumentService.downloadFileByName(doc.name, doc.category)
+    const blob = response instanceof Blob ? response : response?.data
+
+    if (!(blob instanceof Blob)) {
+      throw new Error('No se pudo obtener el archivo')
+    }
+
+    if (extension === 'pdf') {
+      // Para PDF, crear URL del blob
+      previewContent.value = window.URL.createObjectURL(blob)
+    } else if (extension === 'docx') {
+      // Para DOCX, convertir a HTML usando mammoth
+      const arrayBuffer = await blob.arrayBuffer()
+      const result = await mammoth.convertToHtml({ arrayBuffer })
+      previewContent.value = result.value
+    }
+  } catch (error) {
+    console.error('Error al cargar el documento:', error)
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'Error al cargar la previsualización del documento'
+    setTimeout(() => { showNotification.value = false }, 4000)
+    closePreviewModal()
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+function closePreviewModal() {
+  showPreviewModal.value = false
+  previewDocument.value = null
+  // Limpiar URL del blob para PDFs
+  if (previewType.value === 'pdf' && previewContent.value) {
+    window.URL.revokeObjectURL(previewContent.value)
+  }
+  previewContent.value = ''
+  previewLoading.value = false
 }
 
 function deleteDocument(id: number) {
@@ -453,3 +596,60 @@ watch(() => categoryName, (nuevo) => {
   fetchCategoryTexts(nuevo)
 })
 </script>
+
+<style scoped>
+/* Estilos para el contenido DOCX */
+.docx-content :deep(p) {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.docx-content :deep(h1),
+.docx-content :deep(h2),
+.docx-content :deep(h3),
+.docx-content :deep(h4),
+.docx-content :deep(h5),
+.docx-content :deep(h6) {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.docx-content :deep(ul),
+.docx-content :deep(ol) {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.docx-content :deep(li) {
+  margin-bottom: 0.5rem;
+}
+
+.docx-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.docx-content :deep(td),
+.docx-content :deep(th) {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.docx-content :deep(th) {
+  background-color: #f9fafb;
+  font-weight: bold;
+}
+
+/* Dark mode styles for DOCX content */
+.dark .docx-content :deep(td),
+.dark .docx-content :deep(th) {
+  border-color: #4b5563;
+}
+
+.dark .docx-content :deep(th) {
+  background-color: #374151;
+}
+</style>
