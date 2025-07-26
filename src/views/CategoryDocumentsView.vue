@@ -249,7 +249,7 @@
 
           <!-- DOCX Preview -->
           <div v-else-if="previewType === 'docx' && previewContent" class="h-full overflow-auto p-8"
-            :class="themeStore.dark ? 'bg-neutral-900' : 'bg-gray-50'">
+            :class="themeStore.dark ? 'bg-neutral-900' : 'bg-gray-200'">
             <div :class="[
               'max-w-4xl mx-auto p-8 rounded-lg shadow-lg prose prose-lg',
               themeStore.dark ? 'bg-neutral-700 prose-invert' : 'bg-white'
