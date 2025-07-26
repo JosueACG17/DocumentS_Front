@@ -31,8 +31,7 @@
 
         <!-- Search & Documents: ancho completo -->
         <div class="col-span-1 lg:col-span-3 w-full">
-          <DocumentsList v-model:view-mode="viewMode" @download-document="downloadDocument"
-            @view-document="viewDocument" class="w-full" />
+          <DocumentsList v-model:view-mode="viewMode" class="w-full" />
         </div>
       </div>
 
@@ -52,6 +51,7 @@ import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
 import { useCategoriesStore } from '@/stores/categories'
 import { randomInt } from '@/utils/fileUtils'
+import type { ViewMode } from '@/types'
 
 // Components
 import DashboardHeader from '@/components/DashboardHeader.vue'
@@ -75,7 +75,7 @@ const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
 const categoriesStore = useCategoriesStore()
 
-const { addDocument, downloadDocument, viewDocument } = useDocuments()
+const { addDocument } = useDocuments()
 const {
   isAnalyzing,
   kmeansStatus,
@@ -84,8 +84,8 @@ const {
   runKMeansAnalysis,
 } = useKMeans()
 
-const viewMode = ref('list')
-const selectedCategory = ref('')
+const viewMode = ref<ViewMode>('list')
+const selectedCategory = ref<number>(0)
 const showNotification = ref(false)
 const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 const notificationMessage = ref('')
@@ -145,7 +145,7 @@ const handleFileUploaded = async (file: File) => {
 
 // Muestra la notificación global
 function handleShowNotification(type: string, message: string) {
-  notificationType.value = type as any
+  notificationType.value = type as 'success' | 'error' | 'info' | 'warning'
   notificationMessage.value = message
   showNotification.value = true
   setTimeout(() => { showNotification.value = false }, 4000)
@@ -162,6 +162,8 @@ const computedStats = computed(() => [
   {
     label: 'Total Documentos',
     value: totalDocuments.value.toString(),
+    change: '+12%',
+    trend: 'up' as const,
     icon: BookOpen,
     iconBg: 'bg-gradient-to-r from-blue-500 to-cyan-500',
     gradient: 'from-blue-500 to-cyan-500',
@@ -169,6 +171,8 @@ const computedStats = computed(() => [
   {
     label: 'Categorías Activas',
     value: totalCategories.value.toString(),
+    change: '+5%',
+    trend: 'up' as const,
     icon: Folder,
     iconBg: 'bg-gradient-to-r from-green-500 to-emerald-500',
     gradient: 'from-green-500 to-emerald-500',
@@ -176,6 +180,8 @@ const computedStats = computed(() => [
   {
     label: 'Análisis K-Means',
     value: '4',
+    change: '+8%',
+    trend: 'up' as const,
     icon: Brain,
     iconBg: 'bg-gradient-to-r from-purple-500 to-pink-500',
     gradient: 'from-purple-500 to-pink-500',
@@ -183,6 +189,8 @@ const computedStats = computed(() => [
   {
     label: 'Precisión IA',
     value: '94.2%',
+    change: '+2.1%',
+    trend: 'up' as const,
     icon: Target,
     iconBg: 'bg-gradient-to-r from-orange-500 to-red-500',
     gradient: 'from-orange-500 to-red-500',
