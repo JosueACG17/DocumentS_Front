@@ -229,7 +229,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  topOffset: 80 
+  topOffset: 80
 })
 
 // Stores

@@ -329,16 +329,15 @@ const category = computed(() => {
 
 const documents = computed(() => {
   return documentsStore.documents
-    .filter(doc => (doc.categories[0] || 'Sin categoría') === categoryName)
-    .map((doc) => ({
-      id: doc._id, // Usar el _id real del documento
+    .map((doc, idx) => ({
+      id: idx + 1,
       name: doc.filename,
       category: doc.categories[0] || 'Sin categoría',
       extension: doc.filename.split('.').pop() || '',
       size: doc.content ? `${(doc.content.length / 1024).toFixed(1)} KB` : '',
       date: '',
-      originalDoc: doc // Guardar referencia al documento original
     }))
+    .filter(doc => doc.category === categoryName)
 })
 
 const totalDocuments = computed(() => documentsStore.documents.length)
@@ -354,18 +353,15 @@ const notificationMessage = ref('')
 
 // Modal de previsualización
 const showPreviewModal = ref(false)
-const previewDocument = ref<{ id: string, name: string, category: string, extension: string } | null>(null)
+const previewDocument = ref<{ id: number, name: string, category: string, extension: string } | null>(null)
 const previewContent = ref('')
 const previewType = ref<'pdf' | 'docx' | 'unsupported'>('pdf')
 const previewLoading = ref(false)
 
 // Mapear documentos filtrados a la estructura usada en AllDocumentsView.vue
-async function viewDocument(id: string) {
+async function viewDocument(id: number) {
   const doc = documents.value.find(d => d.id === id)
-  if (!doc) {
-    console.error('Documento no encontrado con ID:', id)
-    return
-  }
+  if (!doc) return
 
   const extension = doc.extension.toLowerCase()
 
@@ -385,9 +381,8 @@ async function viewDocument(id: string) {
   previewContent.value = ''
 
   try {
-    // Descargar el archivo para previsualización usando el documento original
-    console.log('Intentando descargar:', { filename: doc.originalDoc.filename, category: doc.originalDoc.categories[0] })
-    const response = await DocumentService.downloadFileByName(doc.originalDoc.filename, doc.originalDoc.categories[0] || 'Sin categoría')
+    // Descargar el archivo para previsualización
+    const response = await DocumentService.downloadFileByName(doc.name, doc.category)
     const blob = response instanceof Blob ? response : response
 
     if (!(blob instanceof Blob)) {
@@ -405,10 +400,9 @@ async function viewDocument(id: string) {
     }
   } catch (error) {
     console.error('Error al cargar el documento:', error)
-    console.error('Datos del documento:', { filename: doc.name, category: doc.category })
     showNotification.value = true
     notificationType.value = 'error'
-    notificationMessage.value = `Error al cargar la previsualización: ${error instanceof Error ? error.message : 'Error desconocido'}`
+    notificationMessage.value = 'Error al cargar la previsualización del documento'
     setTimeout(() => { showNotification.value = false }, 4000)
     closePreviewModal()
   } finally {
@@ -427,11 +421,11 @@ function closePreviewModal() {
   previewLoading.value = false
 }
 
-function downloadDocument(id: string) {
+function downloadDocument(id: number) {
   const doc = documents.value.find(d => d.id === id)
   if (!doc) return
 
-  DocumentService.downloadFileByName(doc.originalDoc.filename, doc.originalDoc.categories[0] || 'Sin categoría')
+  DocumentService.downloadFileByName(doc.name, doc.category)
     .then(response => {
       const blob = response instanceof Blob ? response : response
       if (blob instanceof Blob) {
@@ -464,18 +458,18 @@ function downloadDocument(id: string) {
 
 // --- Cambiar categoría de archivo ---
 const showMoveModal = ref(false)
-const selectedFile = ref<{ id: string, name: string, category: string } | null>(null)
+const selectedFile = ref<{ id: number, name: string, category: string } | null>(null)
 const targetCategory = ref('')
 const allCategories = computed(() => categoriesStore.categories)
 
 // --- Modal de eliminación ---
 const showDeleteModal = ref(false)
-const fileToDelete = ref<{ id: string, name: string, category: string } | null>(null)
+const fileToDelete = ref<{ id: number, name: string, category: string } | null>(null)
 
 // Crear referencia al icono Folder para evitar errores
 const FolderIcon = Folder
 
-function openMoveModal(doc: { id: string, name: string, category: string }) {
+function openMoveModal(doc: { id: number, name: string, category: string }) {
   selectedFile.value = doc
   targetCategory.value = ''
   showMoveModal.value = true
@@ -487,7 +481,7 @@ function closeMoveModal() {
   targetCategory.value = ''
 }
 
-function openDeleteModal(doc: { id: string, name: string, category: string }) {
+function openDeleteModal(doc: { id: number, name: string, category: string }) {
   fileToDelete.value = doc
   showDeleteModal.value = true
 }
@@ -497,7 +491,7 @@ function closeDeleteModal() {
   fileToDelete.value = null
 }
 
-function deleteDocument(id: string) {
+function deleteDocument(id: number) {
   const doc = documents.value.find(d => d.id === id)
   if (!doc) return
 
@@ -510,10 +504,18 @@ function confirmDeleteDocument() {
 
   const doc = fileToDelete.value
 
-  // Ya tenemos el _id directamente del documento
-  const docId = doc.id
+  // Buscar el documento real en el store para obtener su _id
+  const realDoc = documentsStore.documents.find(d => d.filename === doc.name)
+  if (!realDoc || !realDoc._id) {
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'No se pudo encontrar el ID del documento'
+    setTimeout(() => { showNotification.value = false }, 4000)
+    closeDeleteModal()
+    return
+  }
 
-  DocumentService.deleteDocument(docId)
+  DocumentService.deleteDocument(realDoc._id)
     .then(() => {
       showNotification.value = true
       notificationType.value = 'success'
@@ -609,7 +611,6 @@ async function fetchCategoryTexts(nombreCategoria: string) {
 
 onMounted(() => {
   categoriesStore.fetchCategories()
-  documentsStore.fetchDocuments() // Asegurar que los documentos estén actualizados
   fetchCategoryTexts(categoryName)
 })
 
