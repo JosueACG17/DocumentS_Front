@@ -88,9 +88,17 @@ const handleFileUpload = async (event: Event) => {
     formData.append('file', file)
     try {
       await DocumentService.uploadDocument(formData)
-      emit('showNotification', 'success', '¡Documento subido exitosamente!')
+
+      // Actualizar el store de documentos para obtener la información más reciente
+      await documentsStore.fetchDocuments()
+
+      // Buscar el documento recién subido en el store actualizado
+      const uploadedDoc = documentsStore.documents.find(doc => doc.filename === file.name)
+      const category = uploadedDoc?.categories?.[0] || 'Sin categoría'
+
+      emit('showNotification', 'success', `¡Documento subido exitosamente a "${category}"!`)
       emit('fileUploaded', file)
-    } catch (err) {
+    } catch (_err) {
       emit('showNotification', 'error', 'Error al subir el documento')
     } finally {
       isUploading.value = false
@@ -111,9 +119,17 @@ const handleFileDrop = async (event: DragEvent) => {
     formData.append('file', file)
     try {
       await DocumentService.uploadDocument(formData)
-      emit('showNotification', 'success', '¡Documento subido exitosamente!')
+
+      // Actualizar el store de documentos para obtener la información más reciente
+      await documentsStore.fetchDocuments()
+
+      // Buscar el documento recién subido en el store actualizado
+      const uploadedDoc = documentsStore.documents.find(doc => doc.filename === file.name)
+      const category = uploadedDoc?.categories?.[0] || 'Sin categoría'
+
+      emit('showNotification', 'success', `¡Documento subido exitosamente a "${category}"!`)
       emit('fileUploaded', file)
-    } catch (err) {
+    } catch (_err) {
       emit('showNotification', 'error', 'Error al subir el documento')
     } finally {
       isUploading.value = false

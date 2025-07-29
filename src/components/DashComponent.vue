@@ -10,6 +10,11 @@
     <!-- Header -->
     <DashboardHeader :total-documents="totalDocuments" />
 
+    <!-- File Assistant Bot -->
+    <FileAssistantBot :top-offset="80" @document-selected="handleDocumentSelected"
+      @category-selected="handleCategorySelected" @show-notification="handleShowNotification"
+      @show-all-files="handleShowAllFiles" @show-by-category="handleShowByCategory" />
+
     <div :class="[
       'relative z-10 mx-auto px-6 py-8',
       themeStore.dark ? 'bg-neutral-900' : 'bg-white'
@@ -36,10 +41,89 @@
       </div>
 
       <!-- K-Means Analysis Section -->
-<div class="mt-8 flex flex-col gap-8">
+      <div class="mt-8 flex flex-col gap-8">
         <KMeansAnalysis :is-analyzing="isAnalyzing" :kmeans-status="kmeansStatus"
           :kmeans-status-color="kmeansStatusColor" :results="kmeansResults" @run-analysis="handleRunAnalysis" />
         <KMeansVisualization :results="kmeansResults" :graph-data="graphData" :clear-graph-data="clearGraphData" />
+      </div>
+    </div>
+
+    <!-- Modal de Previsualización de Documentos -->
+    <div v-if="showPreviewModal"
+      class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">
+      <div :class="[
+        themeStore.dark
+          ? 'bg-neutral-800 text-white border-white/10'
+          : 'bg-white text-neutral-800 border-gray-200',
+        'rounded-xl border shadow-2xl relative transform transition-all duration-300 scale-100',
+        'w-[95vw] h-[95vh] max-w-7xl max-h-[95vh] overflow-hidden flex flex-col'
+      ]">
+        <!-- Header del Modal -->
+        <div class="flex items-center justify-between p-6 border-b"
+          :class="themeStore.dark ? 'border-white/10' : 'border-gray-200'">
+          <div class="flex items-center space-x-3">
+            <div :class="[
+              'w-10 h-10 rounded-lg flex items-center justify-center text-white',
+              previewDocument?.filename.toLowerCase().endsWith('.pdf')
+                ? 'bg-gradient-to-r from-red-500 to-pink-500'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-500'
+            ]">
+              <FileType v-if="previewDocument?.filename.toLowerCase().endsWith('.pdf')" class="w-6 h-6" />
+              <FileText v-else class="w-6 h-6" />
+            </div>
+            <div>
+              <h3 class="text-xl font-bold">{{ previewDocument?.filename || 'Documento' }}</h3>
+              <p class="text-sm opacity-70">Previsualización del documento</p>
+            </div>
+          </div>
+          <button @click="closePreviewModal" :class="[
+            themeStore.dark
+              ? 'hover:bg-neutral-700 text-neutral-300'
+              : 'hover:bg-gray-100 text-gray-500',
+            'p-2 rounded-full transition-colors cursor-pointer'
+          ]">
+            <X class="w-6 h-6" />
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="flex-1 overflow-hidden">
+          <!-- Loading -->
+          <div v-if="previewLoading" class="flex items-center justify-center h-full">
+            <div class="flex flex-col items-center space-y-4">
+              <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-lg font-medium">Cargando previsualización...</p>
+            </div>
+          </div>
+
+          <!-- PDF Preview -->
+          <div v-else-if="previewType === 'pdf' && previewContent" class="h-full">
+            <VuePdfApp :pdf="previewContent" :config="{
+              sidebar: { thumbnails: true, outline: true },
+              toolbar: { toolbarViewerLeft: { findbar: true, previous: true, next: true, pageNumber: true } }
+            }" class="h-full w-full" />
+          </div>
+
+          <!-- DOCX Preview -->
+          <div v-else-if="previewType === 'docx' && previewContent" class="h-full overflow-auto p-8"
+            :class="themeStore.dark ? 'bg-neutral-900' : 'bg-gray-200'">
+            <div :class="[
+              'max-w-4xl mx-auto p-8 rounded-lg shadow-lg prose prose-lg',
+              themeStore.dark ? 'bg-neutral-700 prose-invert' : 'bg-white'
+            ]">
+              <div v-html="previewContent" class="docx-content"></div>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else class="flex items-center justify-center h-full">
+            <div class="text-center">
+              <FileX class="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p class="text-lg font-medium mb-2">No se pudo cargar la previsualización</p>
+              <p class="text-sm opacity-70">El documento no está disponible o el formato no es compatible</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -52,6 +136,10 @@ import { useDocumentsStore } from '@/stores/documents'
 import { useCategoriesStore } from '@/stores/categories'
 import { randomInt } from '@/utils/fileUtils'
 import type { ViewMode } from '@/types'
+import { useRouter } from 'vue-router'
+import { DocumentService } from '@/services/DocumentService'
+import mammoth from 'mammoth'
+import VuePdfApp from 'vue3-pdf-app'
 
 // Components
 import DashboardHeader from '@/components/DashboardHeader.vue'
@@ -62,13 +150,14 @@ import DocumentsList from '@/components/DocumentsList.vue'
 import KMeansAnalysis from '@/components/KMeansAnalysis.vue'
 import KMeansVisualization from '@/components/KMeansVisualization.vue'
 import NotificationComponent from '@/components/NotificationComponent.vue'
+import FileAssistantBot from '@/components/FileAssistantBot.vue'
 
 // Composables
 import { useDocuments } from '@/composables/useDocuments'
 import { useKMeans } from '@/composables/useKMeans'
 
 // Icons (para categorías, el que uses)
-import { BookOpen, Folder, Brain, Target } from 'lucide-vue-next'
+import { BookOpen, Folder, Brain, Target, FileText, X, FileX, FileType } from 'lucide-vue-next'
 
 // Theme
 const themeStore = useThemeStore()
@@ -91,6 +180,16 @@ const selectedCategory = ref<number>(0)
 const showNotification = ref(false)
 const notificationType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 const notificationMessage = ref('')
+
+// Variables para previsualización de documentos
+const showPreviewModal = ref(false)
+const previewDocument = ref<import('@/types/apiresponse').DocumentData | null>(null)
+const previewContent = ref('')
+const previewType = ref<'pdf' | 'docx' | 'unsupported'>('pdf')
+const previewLoading = ref(false)
+
+// Router para navegación
+const router = useRouter()
 
 // Carga documentos cuando monte el componente
 onMounted(() => {
@@ -158,6 +257,80 @@ function handleRunAnalysis() {
   showNotification.value = true
   runKMeansAnalysis()
   setTimeout(() => { showNotification.value = false }, 2000)
+}
+
+// Handlers para el FileAssistantBot
+async function handleDocumentSelected(document: import('@/types/apiresponse').DocumentData) {
+  const extension = document.filename.split('.').pop()?.toLowerCase() || ''
+
+  // Verificar si es un tipo de archivo soportado
+  if (!['pdf', 'docx'].includes(extension)) {
+    handleShowNotification('warning', `La previsualización no está disponible para archivos .${extension.toUpperCase()}`)
+    return
+  }
+
+  previewDocument.value = document
+  previewType.value = extension as 'pdf' | 'docx'
+  previewLoading.value = true
+  showPreviewModal.value = true
+  previewContent.value = ''
+
+  try {
+    // Obtener la categoría del documento para la descarga
+    const category = document.categories?.[0] || 'Sin categoría'
+
+    // Descargar el archivo para previsualización
+    const response = await DocumentService.downloadFileByName(document.filename, category)
+    const blob = response instanceof Blob ? response : response
+
+    if (!(blob instanceof Blob)) {
+      throw new Error('No se pudo obtener el archivo')
+    }
+
+    if (extension === 'pdf') {
+      // Para PDF, crear URL del blob
+      previewContent.value = window.URL.createObjectURL(blob)
+    } else if (extension === 'docx') {
+      // Para DOCX, convertir a HTML usando mammoth
+      const arrayBuffer = await blob.arrayBuffer()
+      const result = await mammoth.convertToHtml({ arrayBuffer })
+      previewContent.value = result.value
+    }
+  } catch (error) {
+    console.error('Error al cargar el documento:', error)
+    handleShowNotification('error', 'Error al cargar la previsualización del documento')
+    closePreviewModal()
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+function handleCategorySelected(categoryName: string) {
+  // Buscar el ID de la categoría basado en el nombre
+  const categoryIndex = categoriesStore.categories.findIndex(cat => cat === categoryName)
+  if (categoryIndex !== -1) {
+    const categoryId = categoryIndex + 1
+    router.push({ name: 'category-documents', params: { id: categoryId.toString() } })
+  }
+}
+
+function handleShowAllFiles() {
+  router.push({ name: 'all-documents' })
+}
+
+function handleShowByCategory() {
+  router.push({ name: 'all-categories' })
+}
+
+function closePreviewModal() {
+  showPreviewModal.value = false
+  previewDocument.value = null
+  // Limpiar URL del blob para PDFs
+  if (previewType.value === 'pdf' && previewContent.value) {
+    window.URL.revokeObjectURL(previewContent.value)
+  }
+  previewContent.value = ''
+  previewLoading.value = false
 }
 
 const computedStats = computed(() => [
@@ -242,12 +415,12 @@ const computedStats = computed(() => [
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(147, 51, 234, 0.5);
+  background: rgba(167, 159, 173, 0.5);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(147, 51, 234, 0.7);
+  background: rgba(167, 159, 173, 0.5);
 }
 
 /* Glassmorphism effect */
@@ -259,5 +432,60 @@ const computedStats = computed(() => [
 * {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estilos para el contenido DOCX */
+.docx-content :deep(p) {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.docx-content :deep(h1),
+.docx-content :deep(h2),
+.docx-content :deep(h3),
+.docx-content :deep(h4),
+.docx-content :deep(h5),
+.docx-content :deep(h6) {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.docx-content :deep(ul),
+.docx-content :deep(ol) {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.docx-content :deep(li) {
+  margin-bottom: 0.5rem;
+}
+
+.docx-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.docx-content :deep(td),
+.docx-content :deep(th) {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.docx-content :deep(th) {
+  background-color: #f9fafb;
+  font-weight: bold;
+}
+
+/* Dark mode styles for DOCX content */
+.dark .docx-content :deep(td),
+.dark .docx-content :deep(th) {
+  border-color: #4b5563;
+}
+
+.dark .docx-content :deep(th) {
+  background-color: #374151;
 }
 </style>
