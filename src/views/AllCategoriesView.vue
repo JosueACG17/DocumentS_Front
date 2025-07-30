@@ -45,6 +45,14 @@
           themeStore.dark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100 border border-gray-300',
           selectedCategory === category.id ? 'ring-2 ring-blue-400' : '',
         ]">
+          <!-- Badge de advertencia (posición absoluta en la esquina superior derecha) -->
+          <div v-if="category.warningsCount > 0"
+            class="absolute -top-2 -right-2 z-10 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-lg animate-pulse"
+            :title="`${category.warningsCount} archivo(s) movido(s) a esta categoría`">
+            <AlertCircle class="w-3 h-3 inline mr-1" />
+            {{ category.warningsCount }}
+          </div>
+
           <div class="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 transition-opacity rounded-xl"
             :class="category.gradient"></div>
           <div class="relative flex flex-col items-center">
@@ -111,10 +119,11 @@ import CustomNotification from '@/components/NotificationComponent.vue'
 import BaseModal from '@/components/BaseModal.vue'
 import { useThemeStore } from '@/stores/theme'
 import { useCategoriesStore } from '@/stores/categories'
-import { Folder, Check, Plus } from 'lucide-vue-next'
+import { useFileWarningsStore } from '@/stores/fileWarnings'
+import { Folder, Check, Plus, AlertCircle } from 'lucide-vue-next'
 import { useDocumentsStore } from '@/stores/documents'
 import { useAuthStore } from '@/stores/auth'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { FolderOpen } from 'lucide-vue-next'
 import { randomInt } from '@/utils/fileUtils'
@@ -124,6 +133,7 @@ const themeStore = useThemeStore()
 const categoriesStore = useCategoriesStore()
 const documentsStore = useDocumentsStore()
 const authStore = useAuthStore()
+const fileWarningsStore = useFileWarningsStore()
 const router = useRouter()
 
 const selectedCategory = null
@@ -167,10 +177,17 @@ const categories = computed(() => {
     const count = counts[name] || 0
     const icon = iconList[randomInt(0, iconList.length - 1)]
     const colors = gradientList[randomInt(0, gradientList.length - 1)]
+
+    // Contar advertencias para esta categoría (archivos movidos HACIA esta categoría)
+    const warningsCount = fileWarningsStore.getWarningsByCategory(name).filter(
+      warning => warning.toCategory === name
+    ).length
+
     return {
       id: idx + 1,
       name,
       count,
+      warningsCount,
       icon,
       ...colors,
     }
@@ -223,4 +240,9 @@ function closeAddModal() {
   newCategory.value = ''
   newText.value = ''
 }
+
+// Inicializar el store de advertencias al montar el componente
+onMounted(() => {
+  fileWarningsStore.init()
+})
 </script>
