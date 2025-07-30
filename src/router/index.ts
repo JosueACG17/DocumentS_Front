@@ -45,7 +45,6 @@ const router = createRouter({
   ],
 })
 
-// Aplicar el guard de autenticación globalmente
 router.beforeEach(authGuard)
 
 export default router

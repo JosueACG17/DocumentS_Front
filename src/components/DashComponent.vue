@@ -19,6 +19,15 @@
       'relative z-10 mx-auto px-6 py-8',
       themeStore.dark ? 'bg-neutral-900' : 'bg-white'
     ]">
+
+      <!-- Welcome Section -->
+      <div class="text-center mb-12">
+        <h1 :class="[
+          'text-4xl font-bold mb-2',
+          themeStore.dark ? 'text-white' : 'text-neutral-900'
+        ]">¡Bienvenido de nuevo, {{ authStore.currentUser?.username }}!</h1>
+      </div>
+
       <!-- Stats Cards -->
       <StatsCards :stats="computedStats" />
 
@@ -140,6 +149,8 @@ import { useRouter } from 'vue-router'
 import { DocumentService } from '@/services/DocumentService'
 import mammoth from 'mammoth'
 import VuePdfApp from 'vue3-pdf-app'
+import { useAuthStore } from '@/stores/auth'
+
 
 // Components
 import DashboardHeader from '@/components/DashboardHeader.vue'
@@ -163,6 +174,7 @@ import { BookOpen, Folder, Brain, Target, FileText, X, FileX, FileType } from 'l
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
 const categoriesStore = useCategoriesStore()
+const authStore = useAuthStore()
 
 const { addDocument } = useDocuments()
 const {
