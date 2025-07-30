@@ -69,6 +69,13 @@ export const DocumentService = {
     payload: { filename: string; source_folder: string; target_folder: string; username: string },
     config?: AxiosRequestConfig,
   ) {
-    return genericRequest.post<string>('/files/move', payload, config)
+    return genericRequest.post<{
+      message: string
+      new_filepath: string
+      original_category: string
+      current_category: string
+      moved: boolean
+      advertencia?: string
+    }>('/files/move', payload, config)
   },
 }

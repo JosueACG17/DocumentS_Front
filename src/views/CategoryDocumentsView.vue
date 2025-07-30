@@ -50,6 +50,13 @@
           'group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-105 shadow-lg border',
           themeStore.dark ? 'bg-white/5 hover:bg-white/10 border-white/10' : 'bg-gray-50 hover:bg-gray-100 border-gray-200'
         ]">
+          <!-- Badge de advertencia (posición absoluta en la esquina superior izquierda) -->
+          <div v-if="fileWarningsStore.hasWarning(doc.name)" @click="openWarningModal(doc.name)"
+            class="absolute top-2 left-2 z-10 bg-orange-500 text-white p-1.5 rounded-full shadow-lg animate-pulse cursor-pointer hover:bg-orange-600 transition-colors"
+            :title="'Clic para ver advertencia: ' + fileWarningsStore.getWarning(doc.name)?.message">
+            <AlertCircle class="w-3 h-3" />
+          </div>
+
           <div class="flex items-center justify-between mb-3">
             <div :class="getFileIcon(doc.extension).bg"
               class="w-10 h-10 rounded-lg flex items-center justify-center text-white">
@@ -80,6 +87,17 @@
             doc.name }}</h4>
           <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">{{
             doc.extension.toUpperCase() }} • {{ doc.size }} • {{ doc.category }}</p>
+
+          <!-- Badge de advertencia adicional con mensaje -->
+          <div v-if="fileWarningsStore.hasWarning(doc.name)" @click="openWarningModal(doc.name)" :class="[
+            'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mt-2 border cursor-pointer hover:scale-105 transition-transform',
+            themeStore.dark
+              ? 'bg-orange-500/20 text-orange-400 border-orange-500/30 hover:bg-orange-500/30'
+              : 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200'
+          ]">
+            <AlertCircle class="w-3 h-3" />
+            <span class="truncate">Archivo movido - Ver advertencia</span>
+          </div>
         </div>
       </div>
       <div v-else
@@ -113,7 +131,7 @@
               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
           <span class="truncate">Categoría actual: <span class="font-semibold">{{ selectedFile?.category
-              }}</span></span>
+          }}</span></span>
         </div>
       </div>
 
@@ -188,6 +206,97 @@
           <button @click="confirmDeleteDocument"
             class="flex-1 py-3 rounded-lg font-semibold transition-colors duration-200 cursor-pointer bg-red-600 hover:bg-red-700 text-white">
             Eliminar
+          </button>
+        </div>
+      </template>
+    </BaseModal>
+
+    <!-- Modal de advertencia -->
+    <BaseModal :visible="showWarningModal" title="Advertencia de movimiento"
+      subtitle="El archivo fue movido desde su categoría original" :header-icon="AlertCircle" icon-color="yellow"
+      @close="closeWarningModal">
+      <!-- Información del archivo -->
+      <div class="space-y-4">
+        <div class="flex items-center p-4 rounded-lg"
+          :class="themeStore.dark ? 'bg-orange-900/20 border border-orange-500/30' : 'bg-orange-50 border border-orange-200'">
+          <AlertCircle :class="themeStore.dark ? 'text-orange-400' : 'text-orange-600'"
+            class="w-6 h-6 mr-3 flex-shrink-0" />
+          <div>
+            <p class="font-medium">{{ selectedWarning?.filename }}</p>
+            <p class="text-sm opacity-80 mt-1">Este archivo fue movido manualmente</p>
+          </div>
+        </div>
+
+        <!-- Mensaje de advertencia -->
+        <div :class="[
+          'p-4 rounded-lg border-l-4',
+          themeStore.dark
+            ? 'bg-neutral-800 border-orange-500 text-gray-300'
+            : 'bg-gray-50 border-orange-500 text-gray-700'
+        ]">
+          <h4 class="font-semibold text-sm mb-2 flex items-center gap-2">
+            <AlertCircle class="w-4 h-4 text-orange-500" />
+            Advertencia del Sistema
+          </h4>
+          <p class="text-sm leading-relaxed">{{ selectedWarning?.message }}</p>
+        </div>
+
+        <!-- Información del movimiento -->
+        <div v-if="fileWarningsStore.getWarning(selectedWarning?.filename || '')" class="space-y-2">
+          <h5 class="font-medium text-sm">Detalles del movimiento:</h5>
+          <div class="flex items-center justify-between p-3 rounded-lg"
+            :class="themeStore.dark ? 'bg-neutral-700/50' : 'bg-gray-100'">
+            <div class="flex items-center space-x-2">
+              <div class="px-3 py-1 rounded-full text-xs font-medium"
+                :class="themeStore.dark ? 'bg-green-600/20 text-green-400' : 'bg-green-100 text-green-700'">
+                Categoría Original
+              </div>
+              <span class="text-sm font-medium">{{ fileWarningsStore.getWarning(selectedWarning?.filename ||
+                '')?.fromCategory }}</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+            <div class="flex items-center space-x-2">
+              <div class="px-3 py-1 rounded-full text-xs font-medium"
+                :class="themeStore.dark ? 'bg-orange-600/20 text-orange-400' : 'bg-orange-100 text-orange-700'">
+                Categoría Actual
+              </div>
+              <span class="text-sm font-medium">{{ fileWarningsStore.getWarning(selectedWarning?.filename ||
+                '')?.toCategory
+                }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div :class="[
+          'p-3 rounded-lg text-xs',
+          themeStore.dark ? 'bg-blue-900/20 text-blue-400' : 'bg-blue-50 text-blue-700'
+        ]">
+          <strong>Nota:</strong> Esta advertencia aparece cuando mueves un archivo desde su categoría original
+          (asignada automáticamente por el modelo de IA) a una categoría diferente. Puedes restaurarlo a su categoría
+          original usando el botón "Restaurar Original".
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <template #actions>
+        <div class="flex space-x-3">
+          <button @click="closeWarningModal"
+            class="flex-1 py-3 rounded-lg font-semibold transition-colors duration-200 cursor-pointer"
+            :class="themeStore.dark ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'">
+            Entendido
+          </button>
+          <button @click="restoreToOriginalCategory"
+            class="flex-1 py-3 rounded-lg font-semibold transition-colors duration-200 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+            Restaurar Original
           </button>
         </div>
       </template>
@@ -278,15 +387,16 @@ import { CategoriesService } from '@/services/CategoriesService'
 import { useRouter, useRoute } from 'vue-router'
 import DashboardHeader from '@/components/DashboardHeader.vue'
 import BaseModal from '@/components/BaseModal.vue'
-import { Download, Eye, FileX, BookOpen, Folder, Brain, Target, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
+import { Download, Eye, FileX, BookOpen, Folder, Brain, Target, Pencil, Trash2, AlertTriangle, AlertCircle } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
 import { DocumentService } from '@/services/DocumentService'
 import NotificationComponent from '@/components/NotificationComponent.vue'
 import { useCategoriesStore } from '@/stores/categories'
 import { useAuthStore } from '@/stores/auth'
+import { useFileWarningsStore } from '@/stores/fileWarnings'
 import { randomInt } from '@/utils/fileUtils'
 import { watch } from 'vue'
 import VuePdfApp from 'vue3-pdf-app'
@@ -295,9 +405,10 @@ import mammoth from 'mammoth'
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
 const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
+const fileWarningsStore = useFileWarningsStore()
 const router = useRouter()
 const route = useRoute()
-const categoriesStore = useCategoriesStore()
 
 const iconList = [BookOpen, Folder, Brain, Target]
 const gradientList = [
@@ -309,11 +420,6 @@ const gradientList = [
   { iconBg: 'bg-gradient-to-r from-pink-500 to-red-500', gradient: 'from-pink-500 to-red-500', progressColor: 'bg-pink-500' },
   { iconBg: 'bg-gradient-to-r from-gray-400 to-gray-600', gradient: 'from-gray-400 to-gray-600', progressColor: 'bg-gray-400' },
 ]
-
-import { onMounted } from 'vue'
-onMounted(() => {
-  categoriesStore.fetchCategories()
-})
 
 const categoryId = Number(route.params.id)
 const categoryName = categoriesStore.categories[categoryId - 1] || 'Sin categoría'
@@ -468,6 +574,10 @@ const allCategories = computed(() => categoriesStore.categories)
 const showDeleteModal = ref(false)
 const fileToDelete = ref<{ id: number, name: string, category: string } | null>(null)
 
+// --- Modal de advertencia ---
+const showWarningModal = ref(false)
+const selectedWarning = ref<{ filename: string, message: string } | null>(null)
+
 // Crear referencia al icono Folder para evitar errores
 const FolderIcon = Folder
 
@@ -491,6 +601,67 @@ function openDeleteModal(doc: { id: number, name: string, category: string }) {
 function closeDeleteModal() {
   showDeleteModal.value = false
   fileToDelete.value = null
+}
+
+function openWarningModal(filename: string) {
+  const warning = fileWarningsStore.getWarning(filename)
+  if (warning) {
+    selectedWarning.value = {
+      filename,
+      message: warning.message
+    }
+    showWarningModal.value = true
+  }
+}
+
+function closeWarningModal() {
+  showWarningModal.value = false
+  selectedWarning.value = null
+}
+
+async function restoreToOriginalCategory() {
+  if (!selectedWarning.value) return
+
+  const warning = fileWarningsStore.getWarning(selectedWarning.value.filename)
+  if (!warning) return
+
+  // Buscar el documento actual
+  const currentDoc = documents.value.find(d => d.name === selectedWarning.value!.filename)
+  if (!currentDoc) {
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'No se pudo encontrar el documento'
+    setTimeout(() => { showNotification.value = false }, 4000)
+    return
+  }
+
+  try {
+    // Mover el archivo de vuelta a su categoría original
+    await DocumentService.moveFile({
+      filename: selectedWarning.value.filename,
+      source_folder: warning.toCategory, // De donde está ahora
+      target_folder: warning.fromCategory, // A donde debe ir (original)
+      username: authStore.currentUser?.username || 'Unknown'
+    })
+
+    // Remover la advertencia del store
+    fileWarningsStore.removeWarning(selectedWarning.value.filename)
+
+    showNotification.value = true
+    notificationType.value = 'success'
+    notificationMessage.value = `El archivo "${selectedWarning.value.filename}" se ha restaurado a su categoría original "${warning.fromCategory}"`
+
+    // Actualizar documentos y cerrar modal
+    await documentsStore.fetchDocuments()
+    closeWarningModal()
+    setTimeout(() => { showNotification.value = false }, 4000)
+  } catch (error) {
+    console.error('Error al restaurar archivo:', error)
+    showNotification.value = true
+    notificationType.value = 'error'
+    notificationMessage.value = 'Error al restaurar el archivo a su categoría original'
+    setTimeout(() => { showNotification.value = false }, 4000)
+  }
 }
 
 function deleteDocument(id: number) {
@@ -539,12 +710,23 @@ function confirmDeleteDocument() {
 async function moveFileCategory() {
   if (!selectedFile.value || !targetCategory.value || targetCategory.value === selectedFile.value.category) return
   try {
-    await DocumentService.moveFile({
+    const response = await DocumentService.moveFile({
       filename: selectedFile.value.name,
       source_folder: selectedFile.value.category,
       target_folder: targetCategory.value,
       username: authStore.currentUser?.username || 'Unknown'
     })
+
+    // Si hay advertencia, la guardamos en el store usando los datos del backend
+    if (response.advertencia) {
+      fileWarningsStore.addWarning(
+        selectedFile.value.name,
+        response.advertencia,
+        response.original_category, // Categoría original del backend
+        response.current_category   // Categoría actual del backend
+      )
+    }
+
     showNotification.value = true
     notificationType.value = 'success'
     notificationMessage.value = `El archivo "${selectedFile.value.name}" se ha movido a "${targetCategory.value}" correctamente.`
@@ -614,6 +796,7 @@ async function fetchCategoryTexts(nombreCategoria: string) {
 
 onMounted(() => {
   categoriesStore.fetchCategories()
+  fileWarningsStore.init()
   fetchCategoryTexts(categoryName)
 })
 
