@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import Cookies from 'js-cookie'
 
 class GenericRequest {
   private instance: AxiosInstance
@@ -11,6 +12,20 @@ class GenericRequest {
         Accept: 'application/json',
       },
     })
+
+    // Interceptor para agregar el token de autorización
+    this.instance.interceptors.request.use(
+      (config) => {
+        const token = Cookies.get('auth_token')
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+      },
+      (error) => {
+        return Promise.reject(error)
+      },
+    )
   }
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { authGuard } from './authGuard'
 
 const CategoryDocumentsView = () => import('../views/CategoryDocumentsView.vue')
 const AllDocumentsView = () => import('../views/AllDocumentsView.vue')
@@ -43,5 +44,8 @@ const router = createRouter({
     },
   ],
 })
+
+// Aplicar el guard de autenticación globalmente
+router.beforeEach(authGuard)
 
 export default router

@@ -20,7 +20,7 @@
           </div>
         </div>
 
-        <!-- Contador + Tema -->
+        <!-- Contador + Usuario + Tema -->
         <div class="flex flex-wrap items-center gap-3 sm:gap-4 justify-start sm:justify-end">
           <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
             v-if="themeStore.dark">
@@ -28,25 +28,33 @@
             <span class="text-sm text-gray-300">{{ totalDocs }} documentos</span>
           </div>
           <div class="flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2" v-else>
-            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span class="text-sm text-gray-700">{{ totalDocs }} documentos</span>
           </div>
 
-          <!-- Botón de cambio de tema -->
+          <!-- Usuario logueado -->
+          <div v-if="authStore.isAuthenticated" class="flex items-center space-x-3">
+            <div
+              :class="['flex items-center space-x-2 rounded-full px-3 py-2', themeStore.dark ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-700']">
+              <User class="w-4 h-4" />
+              <span class="text-sm font-medium">{{ authStore.currentUser?.username }}</span>
+            </div>
+
+            <!-- Botón de cerrar sesión -->
+            <button @click="handleLogout"
+              :class="['p-2 rounded-lg transition-colors duration-200 cursor-pointer', themeStore.dark ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10' : 'text-gray-600 hover:text-red-600 hover:bg-red-50']"
+              title="Cerrar Sesión">
+              <LogOut class="w-5 h-5" />
+            </button>
+          </div>
+
+          <!-- Botón de tema -->
           <button @click="themeStore.toggleTheme()"
-            class="p-2 rounded-full transition-colors focus:outline-none cursor-pointer"
-            :class="themeStore.dark ? 'bg-white/10 hover:bg-white/20 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'">
-            <svg v-if="themeStore.dark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <circle cx="12" cy="12" r="5" stroke="currentColor" />
-              <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-linecap="round" />
-              <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-linecap="round" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-linecap="round" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-linecap="round" />
-              <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-linecap="round" />
-              <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-linecap="round" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-linecap="round" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-linecap="round" />
+            :class="['p-2 rounded-lg transition-colors duration-200 cursor-pointer', themeStore.dark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100']">
+            <svg v-if="themeStore.dark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -60,14 +68,23 @@
   </header>
 </template>
 
-
 <script setup lang="ts">
-import { FileText } from 'lucide-vue-next'
+import { FileText, User, LogOut } from 'lucide-vue-next'
 import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import { computed } from 'vue'
 
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
+const authStore = useAuthStore()
+const router = useRouter()
+
 const totalDocs = computed(() => documentsStore.documents.length)
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push({ name: 'login' })
+}
 </script>

@@ -105,7 +105,13 @@
         </div>
 
         <!-- Register Form -->
-        <form class="space-y-6">
+        <!-- Register Form -->
+        <form @submit.prevent="handleRegister" class="space-y-6">
+          <!-- Error Message -->
+          <div v-if="errorMessage" class="bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
+            <p class="text-red-400 text-sm text-center">{{ errorMessage }}</p>
+          </div>
+
           <!-- Name Field -->
           <div class="space-y-2">
             <label for="fullName" class="text-sm font-semibold text-gray-300 block">
@@ -116,9 +122,12 @@
                 <User
                   class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-200" />
               </div>
-              <input id="fullName" v-model="fullName" type="text" required placeholder="Juan Pérez García"
-                class="w-full pl-12 pr-4 py-4 bg-gray-900/50 border border-gray-700 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70" />
+              <Field id="fullName" name="fullName" type="text" placeholder="Juan Pérez García" :class="[
+                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                errors.fullName ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
+              ]" />
             </div>
+            <ErrorMessage name="fullName" class="text-red-400 text-sm" />
           </div>
 
           <!-- Email Field -->
@@ -131,9 +140,12 @@
                 <Mail
                   class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-200" />
               </div>
-              <input id="email" v-model="email" type="email" required placeholder="tu@email.com"
-                class="w-full pl-12 pr-4 py-4 bg-gray-900/50 border border-gray-700 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70" />
+              <Field id="email" name="email" type="email" placeholder="tu@email.com" :class="[
+                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                errors.email ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
+              ]" />
             </div>
+            <ErrorMessage name="email" class="text-red-400 text-sm" />
           </div>
 
           <!-- Password Field -->
@@ -146,14 +158,17 @@
                 <Lock
                   class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-200" />
               </div>
-              <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
-                placeholder="••••••••"
-                class="w-full pl-12 pr-12 py-4 bg-gray-900/50 border border-gray-700 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70" />
+              <Field id="password" name="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+                :class="[
+                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                  errors.password ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
+                ]" />
               <button type="button" @click="showPassword = !showPassword"
                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors duration-200">
                 <component :is="showPassword ? EyeOff : Eye" class="h-5 w-5" />
               </button>
             </div>
+            <ErrorMessage name="password" class="text-red-400 text-sm" />
             <!-- Password Strength Indicator -->
             <div class="mt-3">
               <div class="flex space-x-1 mb-2">
@@ -177,19 +192,18 @@
                 <Lock
                   class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-200" />
               </div>
-              <input id="confirmPassword" v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
-                required placeholder="••••••••" :class="[
+              <Field id="confirmPassword" name="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
+                placeholder="••••••••" :class="[
                   'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
-                  confirmPassword && password !== confirmPassword
-                    ? 'border-red-500 focus:ring-red-500 hover:border-red-400'
-                    : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
+                  errors.confirmPassword ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
                 ]" />
               <button type="button" @click="showConfirmPassword = !showConfirmPassword"
                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors duration-200">
                 <component :is="showConfirmPassword ? EyeOff : Eye" class="h-5 w-5" />
               </button>
             </div>
-            <div v-if="confirmPassword && password !== confirmPassword"
+            <ErrorMessage name="confirmPassword" class="text-red-400 text-sm" />
+            <div v-if="values.confirmPassword && values.password !== values.confirmPassword"
               class="flex items-center space-x-2 text-red-400 text-sm mt-2">
               <AlertCircle class="w-4 h-4" />
               <span>Las contraseñas no coinciden</span>
@@ -198,10 +212,10 @@
 
 
           <!-- Register Button -->
-          <button type="submit" :disabled="isLoading || !isFormValid"
-            class="w-full py-4 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl text-white font-bold text-lg hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl">
+          <button type="submit" :disabled="isLoading"
+            class="w-full cursor-pointer py-4 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl text-white font-bold text-lg hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl">
             <component :is="isLoading ? Loader : UserPlus" :class="isLoading ? 'animate-spin' : ''" class="w-5 h-5" />
-            <span>{{ isLoading ? 'Creando cuenta...' : 'Crear Cuenta Gratis' }}</span>
+            <span>{{ isLoading ? 'Creando cuenta...' : 'Crear Cuenta' }}</span>
           </button>
         </form>
 
@@ -234,18 +248,26 @@ import {
   Zap, Star, Users, AlertCircle
 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
-
+import { useForm, Field, ErrorMessage } from 'vee-validate'
+import { registerSchema } from '@/utils/validationSchemas'
+import { AuthService, type RegisterRequest } from '@/services/AuthService'
 
 // Reactive data
-const fullName = ref('')
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const acceptTerms = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const isLoading = ref(false)
+const errorMessage = ref('')
 const router = useRouter()
+
+// Setup vee-validate
+const { handleSubmit, errors, values } = useForm({
+  validationSchema: registerSchema
+})
+
+// Emits
+defineEmits<{
+  switchToLogin: []
+}>()
 
 function goToLogin() {
   router.push({ name: 'login' })
@@ -253,7 +275,7 @@ function goToLogin() {
 
 // Computed
 const passwordStrength = computed(() => {
-  const pwd = password.value
+  const pwd = values.password || ''
   let strength = 0
 
   if (pwd.length >= 8) strength++
@@ -262,16 +284,6 @@ const passwordStrength = computed(() => {
   if (/[^A-Za-z0-9]/.test(pwd)) strength++
 
   return strength
-})
-
-const isFormValid = computed(() => {
-  return fullName.value &&
-    email.value &&
-    password.value &&
-    confirmPassword.value &&
-    password.value === confirmPassword.value &&
-    acceptTerms.value &&
-    passwordStrength.value >= 2
 })
 
 // Methods
@@ -306,6 +318,31 @@ const getStrengthTextColor = (strength: number) => {
     default: return 'text-gray-500'
   }
 }
+
+const handleRegister = handleSubmit(async (values) => {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const userData: RegisterRequest = {
+      username: values.fullName,
+      email: values.email,
+      password: values.password
+    }
+
+    const response = await AuthService.register(userData)
+    console.log('Registro exitoso:', response)
+
+    // Redirigir al login con mensaje de éxito
+    router.push({ name: 'login' })
+
+  } catch (error) {
+    console.error('Error en registro:', error)
+    errorMessage.value = AuthService.handleValidationError(error)
+  } finally {
+    isLoading.value = false
+  }
+})
 
 </script>
 

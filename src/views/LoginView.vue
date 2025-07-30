@@ -105,7 +105,12 @@
         </div>
 
         <!-- Login Form -->
-        <form class="space-y-6">
+        <!-- Login Form -->
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <!-- Error Message -->
+          <div v-if="errorMessage" class="bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
+            <p class="text-red-400 text-sm text-center">{{ errorMessage }}</p>
+          </div>
           <!-- Email Field -->
           <div class="space-y-2">
             <label for="email" class="text-sm font-semibold text-gray-300 block">
@@ -115,9 +120,12 @@
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Mail class="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200" />
               </div>
-              <input id="email" v-model="email" type="email" required placeholder="tu@email.com"
-                class="w-full pl-12 pr-4 py-4 bg-gray-900/50 border border-gray-700 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70" />
+              <Field id="email" name="email" type="email" placeholder="tu@email.com" :class="[
+                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                errors.email ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-blue-500 hover:border-gray-600'
+              ]" />
             </div>
+            <ErrorMessage name="email" class="text-red-400 text-sm" />
           </div>
 
           <!-- Password Field -->
@@ -129,19 +137,22 @@
               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Lock class="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200" />
               </div>
-              <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
-                placeholder="••••••••"
-                class="w-full pl-12 pr-12 py-4 bg-gray-900/50 border border-gray-700 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70" />
+              <Field id="password" name="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+                :class="[
+                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                  errors.password ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-blue-500 hover:border-gray-600'
+                ]" />
               <button type="button" @click="showPassword = !showPassword"
                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors duration-200">
                 <component :is="showPassword ? EyeOff : Eye" class="h-5 w-5" />
               </button>
             </div>
+            <ErrorMessage name="password" class="text-red-400 text-sm" />
           </div>
 
           <!-- Login Button -->
           <button type="submit" :disabled="isLoading"
-            class="w-full py-4 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 rounded-2xl text-white font-bold text-lg hover:from-blue-600 hover:via-indigo-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl">
+            class="w-full py-4 cursor-pointer bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 rounded-2xl text-white font-bold text-lg hover:from-blue-600 hover:via-indigo-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl">
             <component :is="isLoading ? Loader : LogIn" :class="isLoading ? 'animate-spin' : ''" class="w-5 h-5" />
             <span>{{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}</span>
           </button>
@@ -176,16 +187,63 @@ import {
   Brain, Shield, Zap
 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { useForm, Field, ErrorMessage } from 'vee-validate'
+import { loginSchema } from '@/utils/validationSchemas'
+import { AuthService, type LoginRequest } from '@/services/AuthService'
+import { useAuthStore } from '@/stores/auth'
 
-const email = ref('')
-const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
+const errorMessage = ref('')
 const router = useRouter()
+const authStore = useAuthStore()
 
-function goToRegister()  {
+// Setup vee-validate
+const { handleSubmit, errors } = useForm({
+  validationSchema: loginSchema
+})
+
+// Emits
+defineEmits<{
+  switchToRegister: []
+}>()
+
+function goToRegister() {
   router.push({ name: 'register' })
 }
+
+const handleLogin = handleSubmit(async (values) => {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const credentials: LoginRequest = {
+      email: values.email,
+      password: values.password
+    }
+
+    const response = await AuthService.login(credentials)
+    console.log('Login exitoso:', response)
+
+    // Guardar datos en el store
+    authStore.setAuth(
+      {
+        username: response.username,
+        email: values.email
+      },
+      response.access_token
+    )
+
+    // Redirigir al home
+    router.push({ name: 'home' })
+
+  } catch (error) {
+    console.error('Error en login:', error)
+    errorMessage.value = AuthService.handleValidationError(error)
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <style scoped>
