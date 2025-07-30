@@ -65,6 +65,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Confirmación de Logout -->
+    <Teleport to="body">
+      <ConfirmModal :is-open="showLogoutModal" type="warning" title="¿Cerrar Sesión?"
+        message="¿Estás seguro de que quieres cerrar sesión? Serás redirigido a la página de inicio de sesión."
+        confirm-text="Sí, cerrar sesión" cancel-text="Cancelar" @confirm="confirmLogout"
+        @cancel="showLogoutModal = false" @close="showLogoutModal = false" />
+    </Teleport>
   </header>
 </template>
 
@@ -74,17 +82,24 @@ import { useThemeStore } from '@/stores/theme'
 import { useDocumentsStore } from '@/stores/documents'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
 const authStore = useAuthStore()
 const router = useRouter()
+const showLogoutModal = ref(false)
 
 const totalDocs = computed(() => documentsStore.documents.length)
 
 const handleLogout = () => {
+  showLogoutModal.value = true
+}
+
+const confirmLogout = () => {
   authStore.logout()
+  showLogoutModal.value = false
   router.push({ name: 'login' })
 }
 </script>

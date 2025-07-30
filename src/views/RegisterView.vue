@@ -202,11 +202,9 @@
                 <component :is="showConfirmPassword ? EyeOff : Eye" class="h-5 w-5" />
               </button>
             </div>
-            <ErrorMessage name="confirmPassword" class="text-red-400 text-sm" />
-            <div v-if="values.confirmPassword && values.password !== values.confirmPassword"
-              class="flex items-center space-x-2 text-red-400 text-sm mt-2">
+            <div v-if="errors.confirmPassword" class="flex items-center space-x-2 text-red-400 text-sm">
               <AlertCircle class="w-4 h-4" />
-              <span>Las contraseñas no coinciden</span>
+              <ErrorMessage name="confirmPassword" />
             </div>
           </div>
 
@@ -219,17 +217,6 @@
           </button>
         </form>
 
-        <!-- Login Link -->
-        <div class="text-center mt-6">
-          <p class="text-gray-400">
-            ¿Ya tienes una cuenta?
-            <button @click="goToLogin"
-              class="text-emerald-400 hover:text-emerald-300 transition-colors font-bold ml-1 cursor-pointer">
-              Inicia sesión aquí
-            </button>
-          </p>
-        </div>
-
         <!-- Footer -->
         <div class="text-center mt-8">
           <p class="text-gray-600 text-sm">
@@ -238,6 +225,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Confirmación -->
+    <ConfirmModal :is-open="showSuccessModal" type="success" title="¡Usuario Creado Correctamente!"
+      message="Tu cuenta ha sido creada exitosamente. Serás redirigido al dashboard automáticamente en unos segundos."
+      :show-cancel="false" :show-confirm="false" @close="showSuccessModal = false" />
   </div>
 </template>
 
@@ -251,12 +243,14 @@ import { useRouter } from 'vue-router'
 import { useForm, Field, ErrorMessage } from 'vee-validate'
 import { registerSchema } from '@/utils/validationSchemas'
 import { AuthService, type RegisterRequest } from '@/services/AuthService'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 // Reactive data
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const showSuccessModal = ref(false)
 const router = useRouter()
 
 // Setup vee-validate
@@ -269,8 +263,10 @@ defineEmits<{
   switchToLogin: []
 }>()
 
-function goToLogin() {
-  router.push({ name: 'login' })
+
+function goToDashboard() {
+  showSuccessModal.value = false
+  router.push({ name: 'home' })
 }
 
 // Computed
@@ -333,8 +329,13 @@ const handleRegister = handleSubmit(async (values) => {
     const response = await AuthService.register(userData)
     console.log('Registro exitoso:', response)
 
-    // Redirigir al login con mensaje de éxito
-    router.push({ name: 'login' })
+    // Mostrar modal de éxito
+    showSuccessModal.value = true
+
+    // Redirigir automáticamente después de 3 segundos
+    setTimeout(() => {
+      goToDashboard()
+    }, 3000)
 
   } catch (error) {
     console.error('Error en registro:', error)

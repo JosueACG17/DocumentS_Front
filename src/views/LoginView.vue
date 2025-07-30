@@ -158,17 +158,6 @@
           </button>
         </form>
 
-        <!-- Register Link -->
-        <div class="text-center mt-6">
-          <p class="text-gray-400">
-            ¿No tienes una cuenta?
-            <button @click="goToRegister"
-              class="text-blue-400 hover:text-blue-300 transition-colors font-bold ml-1 cursor-pointer">
-              Regístrate gratis
-            </button>
-          </p>
-        </div>
-
         <!-- Footer -->
         <div class="text-center mt-8">
           <p class="text-gray-600 text-sm">
@@ -177,6 +166,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Confirmación -->
+    <ConfirmModal :is-open="showSuccessModal" type="success" title="¡Inicio de Sesión Exitoso!"
+      message="Has iniciado sesión correctamente. Serás redirigido al dashboard automáticamente en unos segundos."
+      :show-cancel="false" :show-confirm="false" @close="showSuccessModal = false" />
   </div>
 </template>
 
@@ -191,10 +185,12 @@ import { useForm, Field, ErrorMessage } from 'vee-validate'
 import { loginSchema } from '@/utils/validationSchemas'
 import { AuthService, type LoginRequest } from '@/services/AuthService'
 import { useAuthStore } from '@/stores/auth'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const showSuccessModal = ref(false)
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -207,10 +203,6 @@ const { handleSubmit, errors } = useForm({
 defineEmits<{
   switchToRegister: []
 }>()
-
-function goToRegister() {
-  router.push({ name: 'register' })
-}
 
 const handleLogin = handleSubmit(async (values) => {
   isLoading.value = true
@@ -234,8 +226,13 @@ const handleLogin = handleSubmit(async (values) => {
       response.access_token
     )
 
-    // Redirigir al home
-    router.push({ name: 'home' })
+    // Mostrar modal de éxito
+    showSuccessModal.value = true
+
+    // Redirigir después de 4 segundos
+    setTimeout(() => {
+      router.push({ name: 'home' })
+    }, 2000)
 
   } catch (error) {
     console.error('Error en login:', error)
