@@ -61,9 +61,18 @@
         </div>
       </div>
 
+      <!-- Stats info -->
+      <div class="mb-6">
+        <p :class="['text-sm', themeStore.dark ? 'text-white' : 'text-gray-600']">
+          Mostrando {{ ((currentPage - 1) * pageSize) + 1 }} - {{ Math.min(currentPage * pageSize,
+            filteredDocuments.length) }} de {{ filteredDocuments.length }} documentos
+          <span v-if="totalPages > 1">(Página {{ currentPage }} de {{ totalPages }})</span>
+        </p>
+      </div>
+
       <!-- Grid de documentos -->
-      <div v-if="filteredDocuments.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="doc in filteredDocuments" :key="doc.id" :class="[
+      <div v-if="paginatedDocuments.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="doc in paginatedDocuments" :key="doc.id" :class="[
           'group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-105 shadow-lg border',
           themeStore.dark ? 'bg-white/5 hover:bg-white/10 border-white/10' : 'bg-gray-50 hover:bg-gray-100 border-gray-300'
         ]">
@@ -93,10 +102,46 @@
           <p :class="['text-xs mb-2', themeStore.dark ? 'text-gray-400' : 'text-gray-500']">
             {{ doc.extension.toUpperCase() }} • {{ doc.size }} • {{ doc.category }}
           </p>
+          <!-- Fecha relativa -->
+          <p v-if="doc.date" :class="['text-xs font-medium', themeStore.dark ? 'text-blue-400' : 'text-blue-600']">
+            {{ formatRelativeTime(doc.date) }}
+          </p>
         </div>
       </div>
 
-      <div v-else :class="[
+      <!-- Paginación -->
+      <div v-if="totalPages > 1" class="mt-8 flex items-center justify-center space-x-2">
+        <button @click="currentPage--" :disabled="currentPage === 1" :class="[
+          'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+          currentPage === 1
+            ? (themeStore.dark ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 cursor-not-allowed')
+            : (themeStore.dark ? 'text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 cursor-pointer')
+        ]">
+          Anterior
+        </button>
+
+        <div class="flex items-center space-x-1">
+          <button v-for="page in getVisiblePages()" :key="page" @click="currentPage = page" :class="[
+            'px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+            page === currentPage
+              ? (themeStore.dark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+              : (themeStore.dark ? 'text-gray-300 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100')
+          ]">
+            {{ page }}
+          </button>
+        </div>
+
+        <button @click="currentPage++" :disabled="currentPage === totalPages" :class="[
+          'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+          currentPage === totalPages
+            ? (themeStore.dark ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 cursor-not-allowed')
+            : (themeStore.dark ? 'text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 cursor-pointer')
+        ]">
+          Siguiente
+        </button>
+      </div>
+
+      <div v-else-if="filteredDocuments.length === 0" :class="[
         'flex flex-col items-center justify-center py-24 px-6 space-y-6  mx-auto text-center rounded-lg shadow-lg transition-colors duration-500',
         themeStore.dark ? 'bg-neutral-800 text-gray-400' : 'bg-gray-100 text-gray-700'
       ]">
@@ -285,7 +330,7 @@ const allDocuments = computed<Document[]>(() => {
     category: doc.categories[0] || 'Sin categoría',
     extension: doc.filename.split('.').pop() || '',
     size: doc.content ? `${(doc.content.length / 1024).toFixed(1)} KB` : '',
-    date: '', // Si tienes fecha, mapea aquí
+    date: doc.created_at || '', // Usar la fecha del documento
   }))
 })
 
@@ -295,10 +340,13 @@ onMounted(() => {
 
 const filter = ref('')
 const search = ref('')
+const currentPage = ref(1)
+const pageSize = 15
 
 function resetFilters() {
   search.value = ''
   filter.value = ''
+  currentPage.value = 1
 }
 
 const filteredDocuments = computed(() => {
@@ -314,6 +362,57 @@ const filteredDocuments = computed(() => {
   }
   return docs
 })
+
+// Computed para paginación
+const totalPages = computed(() => {
+  return Math.ceil(filteredDocuments.value.length / pageSize)
+})
+
+const paginatedDocuments = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  const end = start + pageSize
+  return filteredDocuments.value.slice(start, end)
+})
+
+// Función para formatear tiempo relativo
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+
+  const minutes = Math.floor(diff / (1000 * 60))
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const weeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
+  const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30))
+
+  if (minutes < 1) return 'Subido ahora'
+  if (minutes < 60) return `Subido hace ${minutes} min`
+  if (hours < 24) return `Subido hace ${hours}h`
+  if (days < 7) return `Subido hace ${days}d`
+  if (weeks < 4) return `Subido hace ${weeks} sem`
+  if (months < 12) return `Subido hace ${months} mes${months > 1 ? 'es' : ''}`
+
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
+}
+
+// Función para obtener páginas visibles en la paginación
+function getVisiblePages(): number[] {
+  const delta = 2 // Número de páginas a mostrar a cada lado de la página actual
+  const pages: number[] = []
+  const rangeStart = Math.max(1, currentPage.value - delta)
+  const rangeEnd = Math.min(totalPages.value, currentPage.value + delta)
+
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    pages.push(i)
+  }
+
+  return pages
+}
 
 async function downloadAll() {
   try {
@@ -349,7 +448,7 @@ async function downloadAll() {
 }
 
 function downloadDocument(id: number) {
-  const doc = filteredDocuments.value.find(d => d.id === id)
+  const doc = paginatedDocuments.value.find(d => d.id === id)
   if (!doc) return
 
   DocumentService.downloadFileByName(doc.name, doc.category)
@@ -384,7 +483,7 @@ function downloadDocument(id: number) {
 }
 
 async function viewDocument(id: number) {
-  const doc = filteredDocuments.value.find(d => d.id === id)
+  const doc = paginatedDocuments.value.find(d => d.id === id)
   if (!doc) return
 
   const extension = doc.extension.toLowerCase()
@@ -446,7 +545,7 @@ function closePreviewModal() {
 }
 
 function deleteDocument(id: number) {
-  const doc = filteredDocuments.value.find(d => d.id === id)
+  const doc = paginatedDocuments.value.find(d => d.id === id)
   if (!doc) return
 
   // Abrir modal de confirmación

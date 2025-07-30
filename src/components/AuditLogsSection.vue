@@ -78,7 +78,7 @@
         <div v-for="log in recentLogs" :key="log._id" :class="[
           'flex items-start space-x-4 p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] cursor-pointer',
           themeStore.dark
-            ? 'hover:bg-neutral-700/50 border border-neutral-700/90'
+            ? 'hover:bg-neutral-700/50 border border-neutral-700/90 bg-white/5'
             : 'hover:bg-gray-50 border border-gray-300'
         ]">
           <!-- Operation Icon -->
