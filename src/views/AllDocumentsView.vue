@@ -49,6 +49,29 @@
             </select>
           </div>
 
+          <!-- Selector de vista -->
+          <div class="flex rounded-lg overflow-hidden border shadow-sm"
+            :class="themeStore.dark ? 'border-white/20' : 'border-gray-300'">
+            <button @click="viewType = 'grid'" :class="[
+              'px-3 py-2 text-sm font-medium transition-colors cursor-pointer flex items-center gap-2',
+              viewType === 'grid'
+                ? (themeStore.dark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                : (themeStore.dark ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+            ]" title="Vista de tarjetas">
+              <Grid3X3 class="w-4 h-4" />
+              <span class="hidden sm:inline">Tarjetas</span>
+            </button>
+            <button @click="viewType = 'table'" :class="[
+              'px-3 py-2 text-sm font-medium transition-colors cursor-pointer flex items-center gap-2',
+              viewType === 'table'
+                ? (themeStore.dark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                : (themeStore.dark ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+            ]" title="Vista de tabla">
+              <List class="w-4 h-4" />
+              <span class="hidden sm:inline">Tabla</span>
+            </button>
+          </div>
+
           <!-- Botón Descargar Todo -->
           <button v-if="filteredDocuments.length > 0" @click="downloadAll"
             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition-colors whitespace-nowrap cursor-pointer"
@@ -70,8 +93,9 @@
         </p>
       </div>
 
-      <!-- Grid de documentos -->
-      <div v-if="paginatedDocuments.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Vista de Grid (Tarjetas) -->
+      <div v-if="paginatedDocuments.length > 0 && viewType === 'grid'"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="doc in paginatedDocuments" :key="doc.id" :class="[
           'group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-105 shadow-lg border',
           themeStore.dark ? 'bg-white/5 hover:bg-white/10 border-white/10' : 'bg-gray-50 hover:bg-gray-100 border-gray-300'
@@ -106,6 +130,108 @@
           <p v-if="doc.date" :class="['text-xs font-medium', themeStore.dark ? 'text-blue-400' : 'text-blue-600']">
             {{ formatRelativeTime(doc.date) }}
           </p>
+        </div>
+      </div>
+
+      <!-- Vista de Tabla -->
+      <div v-if="paginatedDocuments.length > 0 && viewType === 'table'"
+        class="overflow-hidden rounded-lg border shadow-lg"
+        :class="themeStore.dark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white'">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead :class="themeStore.dark ? 'bg-white/10' : 'bg-gray-50'">
+              <tr>
+                <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider"
+                  :class="themeStore.dark ? 'text-gray-300' : 'text-gray-500'">
+                  Documento
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider"
+                  :class="themeStore.dark ? 'text-gray-300' : 'text-gray-500'">
+                  Tipo
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider"
+                  :class="themeStore.dark ? 'text-gray-300' : 'text-gray-500'">
+                  Tamaño
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider"
+                  :class="themeStore.dark ? 'text-gray-300' : 'text-gray-500'">
+                  Categoría
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider"
+                  :class="themeStore.dark ? 'text-gray-300' : 'text-gray-500'">
+                  Fecha
+                </th>
+                <th class="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider"
+                  :class="themeStore.dark ? 'text-gray-300' : 'text-gray-500'">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y" :class="themeStore.dark ? 'divide-white/10' : 'divide-gray-200'">
+              <tr v-for="doc in paginatedDocuments" :key="doc.id"
+                :class="themeStore.dark ? 'hover:bg-white/5' : 'hover:bg-gray-50'"
+                class="transition-colors duration-200">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div :class="getFileIcon(doc.extension).bg"
+                      class="w-8 h-8 rounded-lg flex items-center justify-center text-white mr-3 flex-shrink-0">
+                      <component :is="getFileIcon(doc.extension).icon" class="w-4 h-4" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div :class="['text-sm font-medium truncate', themeStore.dark ? 'text-white' : 'text-gray-900']">
+                        {{ doc.name }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="[
+                    'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                    doc.extension.toLowerCase() === 'pdf'
+                      ? (themeStore.dark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-800')
+                      : (themeStore.dark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-800')
+                  ]">
+                    {{ doc.extension.toUpperCase() }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div :class="['text-sm', themeStore.dark ? 'text-gray-300' : 'text-gray-500']">
+                    {{ doc.size }}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div :class="['text-sm', themeStore.dark ? 'text-gray-300' : 'text-gray-500']">
+                    {{ doc.category }}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="doc.date"
+                    :class="['text-sm font-medium', themeStore.dark ? 'text-blue-400' : 'text-blue-600']">
+                    {{ formatRelativeTime(doc.date) }}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right">
+                  <div class="flex justify-end space-x-2">
+                    <button @click="downloadDocument(doc.id)"
+                      :class="[themeStore.dark ? 'bg-blue-500/20 hover:bg-blue-500/30' : 'bg-blue-100 hover:bg-blue-200', 'p-2 rounded-md transition-colors cursor-pointer']"
+                      title="Descargar">
+                      <Download :class="themeStore.dark ? 'text-blue-400' : 'text-blue-600'" class="w-4 h-4" />
+                    </button>
+                    <button @click="viewDocument(doc.id)"
+                      :class="[themeStore.dark ? 'bg-green-500/20 hover:bg-green-500/30' : 'bg-green-100 hover:bg-green-200', 'p-2 rounded-md transition-colors cursor-pointer']"
+                      title="Ver">
+                      <Eye :class="themeStore.dark ? 'text-green-400' : 'text-green-600'" class="w-4 h-4" />
+                    </button>
+                    <button @click="deleteDocument(doc.id)"
+                      :class="[themeStore.dark ? 'bg-red-500/20 hover:bg-red-500/30' : 'bg-red-100 hover:bg-red-200', 'p-2 rounded-md transition-colors cursor-pointer']"
+                      title="Eliminar">
+                      <Trash2 :class="themeStore.dark ? 'text-red-400' : 'text-red-600'" class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -280,7 +406,7 @@
 <script setup lang="ts">
 import DashboardHeader from '@/components/DashboardHeader.vue'
 import BaseModal from '@/components/BaseModal.vue'
-import { FileText, Download, Eye, FileX, Search, Trash2, AlertTriangle } from 'lucide-vue-next'
+import { FileText, Download, Eye, FileX, Search, Trash2, AlertTriangle, Grid3X3, List } from 'lucide-vue-next'
 import { getFileIcon } from '@/utils/fileUtils'
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
@@ -321,6 +447,9 @@ const previewLoading = ref(false)
 // Modal de eliminación
 const showDeleteModal = ref(false)
 const fileToDelete = ref<{ id: number, name: string, category: string } | null>(null)
+
+// Tipo de vista
+const viewType = ref<'grid' | 'table'>('grid')
 
 // Mapea DocumentData a Document para la vista
 const allDocuments = computed<Document[]>(() => {
