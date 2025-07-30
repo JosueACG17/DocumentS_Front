@@ -217,6 +217,17 @@
           </button>
         </form>
 
+        <!-- Login Link -->
+        <div class="text-center mt-6">
+          <p class="text-gray-400">
+            ¿Ya tienes una cuenta?
+            <button @click="goToLogin"
+              class="text-emerald-400 hover:text-emerald-300 transition-colors font-bold ml-1 cursor-pointer">
+              Inicia sesión aquí
+            </button>
+          </p>
+        </div>
+
         <!-- Footer -->
         <div class="text-center mt-8">
           <p class="text-gray-600 text-sm">
@@ -228,7 +239,7 @@
 
     <!-- Modal de Confirmación -->
     <ConfirmModal :is-open="showSuccessModal" type="success" title="¡Usuario Creado Correctamente!"
-      message="Tu cuenta ha sido creada exitosamente. Serás redirigido al dashboard automáticamente en unos segundos."
+      message="Tu cuenta ha sido creada exitosamente. Serás redirigido al login automáticamente en unos segundos."
       :show-cancel="false" :show-confirm="false" @close="showSuccessModal = false" />
   </div>
 </template>
@@ -264,9 +275,9 @@ defineEmits<{
 }>()
 
 
-function goToDashboard() {
+function goToLogin() {
   showSuccessModal.value = false
-  router.push({ name: 'home' })
+  router.push({ name: 'login' })
 }
 
 // Computed
@@ -334,7 +345,7 @@ const handleRegister = handleSubmit(async (values) => {
 
     // Redirigir automáticamente después de 3 segundos
     setTimeout(() => {
-      goToDashboard()
+      goToLogin()
     }, 3000)
 
   } catch (error) {

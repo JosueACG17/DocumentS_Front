@@ -158,6 +158,17 @@
           </button>
         </form>
 
+        <!-- Register Link -->
+        <div class="text-center mt-6">
+          <p class="text-gray-400">
+            ¿No tienes una cuenta?
+            <button @click="goToRegister"
+              class="text-blue-400 hover:text-blue-300 transition-colors font-bold ml-1 cursor-pointer">
+              Regístrate gratis
+            </button>
+          </p>
+        </div>
+
         <!-- Footer -->
         <div class="text-center mt-8">
           <p class="text-gray-600 text-sm">
@@ -198,6 +209,10 @@ const authStore = useAuthStore()
 const { handleSubmit, errors } = useForm({
   validationSchema: loginSchema
 })
+
+function goToRegister() {
+  router.push({ name: 'register' })
+}
 
 // Emits
 defineEmits<{

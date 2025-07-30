@@ -113,6 +113,7 @@ import { useThemeStore } from '@/stores/theme'
 import { useCategoriesStore } from '@/stores/categories'
 import { Folder, Check, Plus } from 'lucide-vue-next'
 import { useDocumentsStore } from '@/stores/documents'
+import { useAuthStore } from '@/stores/auth'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { FolderOpen } from 'lucide-vue-next'
@@ -122,6 +123,7 @@ import { CategoriesService } from '@/services/CategoriesService'
 const themeStore = useThemeStore()
 const categoriesStore = useCategoriesStore()
 const documentsStore = useDocumentsStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 const selectedCategory = null
@@ -199,7 +201,11 @@ async function handleCreateCategory() {
   }
 
   try {
-    await CategoriesService.createTrainingExample({ category: categoryName, text })
+    await CategoriesService.createTrainingExample({
+      category: categoryName,
+      text,
+      username: authStore.currentUser?.username || 'Unknown'
+    })
     await CategoriesService.trainModel()
     categoriesStore.addCategory(categoryName)
     showNotification('success', 'Categoría creada y modelo entrenado correctamente')

@@ -286,6 +286,7 @@ import { useDocumentsStore } from '@/stores/documents'
 import { DocumentService } from '@/services/DocumentService'
 import NotificationComponent from '@/components/NotificationComponent.vue'
 import { useCategoriesStore } from '@/stores/categories'
+import { useAuthStore } from '@/stores/auth'
 import { randomInt } from '@/utils/fileUtils'
 import { watch } from 'vue'
 import VuePdfApp from 'vue3-pdf-app'
@@ -293,6 +294,7 @@ import mammoth from 'mammoth'
 
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
+const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const categoriesStore = useCategoriesStore()
@@ -515,7 +517,7 @@ function confirmDeleteDocument() {
     return
   }
 
-  DocumentService.deleteDocument(realDoc._id)
+  DocumentService.deleteDocument(realDoc._id, authStore.currentUser?.username || 'Unknown')
     .then(() => {
       showNotification.value = true
       notificationType.value = 'success'
@@ -540,7 +542,8 @@ async function moveFileCategory() {
     await DocumentService.moveFile({
       filename: selectedFile.value.name,
       source_folder: selectedFile.value.category,
-      target_folder: targetCategory.value
+      target_folder: targetCategory.value,
+      username: authStore.currentUser?.username || 'Unknown'
     })
     showNotification.value = true
     notificationType.value = 'success'

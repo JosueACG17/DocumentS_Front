@@ -4,6 +4,7 @@ import type { AxiosRequestConfig } from 'axios'
 interface TrainingExamplePayload {
   category: string
   text: string
+  username: string
 }
 
 export const CategoriesService = {

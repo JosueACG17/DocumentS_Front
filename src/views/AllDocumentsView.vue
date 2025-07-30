@@ -243,12 +243,14 @@ import { CATEGORIES_DATA } from '@/constants/mockData'
 import type { Document } from '@/types'
 import { useDocumentsStore } from '@/stores/documents'
 import { useThemeStore } from '@/stores/theme'
+import { useAuthStore } from '@/stores/auth'
 import { DocumentService } from '@/services/DocumentService'
 import NotificationComponent from '@/components/NotificationComponent.vue'
 import VuePdfApp from 'vue3-pdf-app'
 import mammoth from 'mammoth'
 
 const themeStore = useThemeStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 function goHome() {
@@ -473,7 +475,7 @@ function confirmDeleteDocument() {
     return
   }
 
-  DocumentService.deleteDocument(realDoc._id)
+  DocumentService.deleteDocument(realDoc._id, authStore.currentUser?.username || 'Unknown')
     .then(() => {
       showNotification.value = true
       notificationType.value = 'success'

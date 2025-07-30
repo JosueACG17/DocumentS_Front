@@ -44,6 +44,7 @@ import { useFileUpload } from '@/composables/useFileUpdload'
 import { DocumentService } from '@/services/DocumentService'
 import { ref } from 'vue'
 import { useDocumentsStore } from '@/stores/documents'
+import { useAuthStore } from '@/stores/auth'
 
 interface Emits {
   (e: 'fileUploaded', file: File): void
@@ -53,6 +54,7 @@ interface Emits {
 const emit = defineEmits<Emits>()
 const themeStore = useThemeStore()
 const documentsStore = useDocumentsStore()
+const authStore = useAuthStore()
 const {
   uploadProgress,
   fileInput,
@@ -87,7 +89,7 @@ const handleFileUpload = async (event: Event) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-      await DocumentService.uploadDocument(formData)
+      await DocumentService.uploadDocument(formData, authStore.currentUser?.username || 'Unknown')
 
       // Actualizar el store de documentos para obtener la información más reciente
       await documentsStore.fetchDocuments()
@@ -118,7 +120,7 @@ const handleFileDrop = async (event: DragEvent) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-      await DocumentService.uploadDocument(formData)
+      await DocumentService.uploadDocument(formData, authStore.currentUser?.username || 'Unknown')
 
       // Actualizar el store de documentos para obtener la información más reciente
       await documentsStore.fetchDocuments()
