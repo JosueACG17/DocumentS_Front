@@ -2,7 +2,7 @@ export interface Stat {
   label: string
   value: string
   change: string
-  trend: "up" | "down"
+  trend: 'up' | 'down'
   icon: unknown
   iconBg: string
   gradient: string
@@ -48,9 +48,12 @@ export interface FABAction {
   color: string
 }
 
+// Re-export audit log types
+export * from './auditlog'
+
 export interface FileIcon {
   icon: unknown
   bg: string
 }
 
-export type ViewMode = "list" | "grid"
+export type ViewMode = 'list' | 'grid'

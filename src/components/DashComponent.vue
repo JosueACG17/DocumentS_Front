@@ -49,6 +49,11 @@
         </div>
       </div>
 
+      <!-- Audit Logs Section -->
+      <div class="mt-8">
+        <AuditLogsSection />
+      </div>
+
       <!-- K-Means Analysis Section -->
       <div class="mt-8 flex flex-col gap-8">
         <KMeansAnalysis :is-analyzing="isAnalyzing" :kmeans-status="kmeansStatus"
@@ -162,6 +167,7 @@ import KMeansAnalysis from '@/components/KMeansAnalysis.vue'
 import KMeansVisualization from '@/components/KMeansVisualization.vue'
 import NotificationComponent from '@/components/NotificationComponent.vue'
 import FileAssistantBot from '@/components/FileAssistantBot.vue'
+import AuditLogsSection from '@/components/AuditLogsSection.vue'
 
 // Composables
 import { useDocuments } from '@/composables/useDocuments'

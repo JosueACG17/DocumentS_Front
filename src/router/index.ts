@@ -5,6 +5,7 @@ import { authGuard } from './authGuard'
 const CategoryDocumentsView = () => import('../views/CategoryDocumentsView.vue')
 const AllDocumentsView = () => import('../views/AllDocumentsView.vue')
 const AllCategoriesView = () => import('../views/AllCategoriesView.vue')
+const AuditLogsView = () => import('../views/AuditLogsView.vue')
 const LoginView = () => import('../views/LoginView.vue')
 const RegisterView = () => import('../views/RegisterView.vue')
 
@@ -41,6 +42,11 @@ const router = createRouter({
       path: '/categorias',
       name: 'all-categories',
       component: AllCategoriesView,
+    },
+    {
+      path: '/audit-logs',
+      name: 'audit-logs',
+      component: AuditLogsView,
     },
   ],
 })
