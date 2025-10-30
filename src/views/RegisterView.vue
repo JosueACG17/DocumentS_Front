@@ -123,7 +123,7 @@
                   class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-200" />
               </div>
               <Field id="fullName" name="fullName" type="text" placeholder="Juan Pérez García" :class="[
-                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
                 errors.fullName ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
               ]" />
             </div>
@@ -141,7 +141,7 @@
                   class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-200" />
               </div>
               <Field id="email" name="email" type="email" placeholder="tu@email.com" :class="[
-                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
                 errors.email ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
               ]" />
             </div>
@@ -160,7 +160,7 @@
               </div>
               <Field id="password" name="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
                 :class="[
-                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
                   errors.password ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
                 ]" />
               <button type="button" @click="showPassword = !showPassword"
@@ -173,7 +173,7 @@
             <div class="mt-3">
               <div class="flex space-x-1 mb-2">
                 <div v-for="i in 4" :key="i"
-                  :class="passwordStrength >= i ? getStrengthColor(passwordStrength) : 'bg-gray-700'"
+                  :class="passwordStrength >= i ? getStrengthColor(passwordStrength) : 'bg-gray-500'"
                   class="h-2 flex-1 rounded-full transition-colors duration-300"></div>
               </div>
               <p class="text-xs" :class="getStrengthTextColor(passwordStrength)">
@@ -194,7 +194,7 @@
               </div>
               <Field id="confirmPassword" name="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
                 placeholder="••••••••" :class="[
-                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
                   errors.confirmPassword ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-emerald-500 hover:border-gray-600'
                 ]" />
               <button type="button" @click="showConfirmPassword = !showConfirmPassword"
@@ -230,7 +230,7 @@
 
         <!-- Footer -->
         <div class="text-center mt-8">
-          <p class="text-gray-600 text-sm">
+          <p class="text-gray-400 text-sm">
             © 2025 DocumentSort. Todos los derechos reservados.
           </p>
         </div>

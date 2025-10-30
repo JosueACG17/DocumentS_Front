@@ -8,12 +8,9 @@ export const authGuard = (
 ) => {
   const authStore = useAuthStore()
 
-  // Rutas públicas que no requieren autenticación
   const publicRoutes = ['login', 'register']
 
-  // Si la ruta es pública, permitir acceso
   if (publicRoutes.includes(to.name as string)) {
-    // Si el usuario ya está autenticado y trata de ir a login/register, redirigir a home
     if (authStore.isAuthenticated) {
       next({ name: 'home' })
       return
@@ -22,13 +19,10 @@ export const authGuard = (
     return
   }
 
-  // Para rutas protegidas, verificar autenticación
   if (!authStore.isAuthenticated) {
-    // Si no está autenticado, redirigir a login
     next({ name: 'login' })
     return
   }
 
-  // Si está autenticado, permitir acceso
   next()
 }

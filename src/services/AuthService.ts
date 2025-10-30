@@ -46,38 +46,29 @@ export const AuthService = {
     return genericRequest.post<AuthResponse>('/auth/login', credentials, config)
   },
 
-  // Método auxiliar para manejar errores de validación
-  handleValidationError(error: unknown): string {
-    // Si el error tiene la estructura de FastAPI con detail array
-    if (error && typeof error === 'object' && 'detail' in error) {
-      const validationError = error as ValidationError
-      if (Array.isArray(validationError.detail)) {
-        return validationError.detail.map((err) => err.msg).join(', ')
-      }
-      // Si detail es un string directamente
-      if (typeof validationError.detail === 'string') {
-        return validationError.detail
-      }
+  handleValidationError(error: any): string {
+    if (error.response?.data?.message) {
+      return error.response.data.message
     }
 
-    // Si el error tiene un mensaje directo
-    if (error && typeof error === 'object' && 'message' in error) {
-      return (error as { message: string }).message
+    if (error.response?.status === 401) {
+      return 'Credenciales incorrectas. Verifica tu email y contraseña.'
     }
 
-    // Si el error es un string directamente
-    if (typeof error === 'string') {
-      return error
+    if (error.response?.status === 422) {
+      return 'Datos inválidos. Verifica la información ingresada.'
     }
 
-    // Si el error tiene la estructura {detail: "mensaje"}
-    if (error && typeof error === 'object' && 'detail' in error) {
-      const simpleError = error as SimpleError
-      if (typeof simpleError.detail === 'string') {
-        return simpleError.detail
-      }
+    if (error.response?.status >= 500) {
+      return 'Error en el servidor. Intenta nuevamente en unos momentos.'
     }
 
-    return 'Ha ocurrido un error inesperado'
-  },
+    if (error.code === 'NETWORK_ERROR' || !error.response) {
+      return 'Error de conexión. Verifica tu conexión a internet.'
+    }
+
+    // Cambiar este mensaje por defecto
+    return 'Ha ocurrido un error inesperado. Intenta nuevamente.'
+  }
+
 }

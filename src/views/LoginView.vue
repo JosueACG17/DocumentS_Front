@@ -77,7 +77,7 @@
 
     <!-- Right Side - Login Form -->
     <div
-      class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-bl from-blue-900 via-gray-900 to-blue-950 relative">
+      class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-bl from-blue-700 via-gray-900 to-blue-900 relative">
       <!-- Subtle background pattern -->
       <div class="absolute inset-0 bg-dot-white/[0.02] bg-[size:20px_20px]"></div>
 
@@ -101,10 +101,9 @@
           <h2 class="text-4xl font-bold text-white mb-3">
             Iniciar Sesión
           </h2>
-          <p class="text-gray-400 text-lg">Accede a tu cuenta para continuar</p>
+          <p class="text-gray-300 text-lg">Accede a tu cuenta para continuar</p>
         </div>
 
-        <!-- Login Form -->
         <!-- Login Form -->
         <form @submit.prevent="handleLogin" class="space-y-6">
           <!-- Error Message -->
@@ -121,7 +120,7 @@
                 <Mail class="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors duration-200" />
               </div>
               <Field id="email" name="email" type="email" placeholder="tu@email.com" :class="[
-                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                'w-full pl-12 pr-4 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
                 errors.email ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-blue-500 hover:border-gray-600'
               ]" />
             </div>
@@ -139,7 +138,7 @@
               </div>
               <Field id="password" name="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
                 :class="[
-                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
+                  'w-full pl-12 pr-12 py-4 bg-gray-900/50 border rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 hover:bg-gray-900/70',
                   errors.password ? 'border-red-500 focus:ring-red-500 hover:border-red-400' : 'border-gray-700 focus:ring-blue-500 hover:border-gray-600'
                 ]" />
               <button type="button" @click="showPassword = !showPassword"
@@ -171,7 +170,7 @@
 
         <!-- Footer -->
         <div class="text-center mt-8">
-          <p class="text-gray-600 text-sm">
+          <p class="text-gray-400 text-sm">
             © 2025 DocumentSort. Todos los derechos reservados.
           </p>
         </div>
@@ -205,7 +204,7 @@ const showSuccessModal = ref(false)
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Setup vee-validate
+
 const { handleSubmit, errors } = useForm({
   validationSchema: loginSchema
 })
@@ -214,7 +213,7 @@ function goToRegister() {
   router.push({ name: 'register' })
 }
 
-// Emits
+
 defineEmits<{
   switchToRegister: []
 }>()
@@ -232,7 +231,6 @@ const handleLogin = handleSubmit(async (values) => {
     const response = await AuthService.login(credentials)
     console.log('Login exitoso:', response)
 
-    // Guardar datos en el store
     authStore.setAuth(
       {
         username: response.username,
@@ -241,10 +239,8 @@ const handleLogin = handleSubmit(async (values) => {
       response.access_token
     )
 
-    // Mostrar modal de éxito
     showSuccessModal.value = true
 
-    // Redirigir después de 4 segundos
     setTimeout(() => {
       router.push({ name: 'home' })
     }, 2000)
