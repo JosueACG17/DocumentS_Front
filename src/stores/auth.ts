@@ -9,20 +9,16 @@ interface User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  // State
   const user = ref<User | null>(null)
   const token = ref<string | null>(null)
 
-  // Getters
   const isAuthenticated = computed(() => !!token.value)
   const currentUser = computed(() => user.value)
 
-  // Actions
   const setAuth = (userData: User, authToken: string) => {
     user.value = userData
     token.value = authToken
 
-    // Guardar en cookies (expira en 7 días)
     Cookies.set('auth_token', authToken, {
       expires: 7,
       secure: import.meta.env.PROD,
@@ -57,7 +53,6 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     token.value = null
 
-    // Limpiar cookies
     Cookies.remove('auth_token')
     Cookies.remove('user_data')
   }
@@ -66,17 +61,13 @@ export const useAuthStore = defineStore('auth', () => {
     clearAuth()
   }
 
-  // Cargar datos al inicializar
   loadAuthFromCookies()
 
   return {
-    // State
     user,
     token,
-    // Getters
     isAuthenticated,
     currentUser,
-    // Actions
     setAuth,
     loadAuthFromCookies,
     clearAuth,

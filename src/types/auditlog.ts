@@ -1,4 +1,3 @@
-// Tipos para Audit Logs
 export interface AuditLog {
   _id: string
   timestamp: string

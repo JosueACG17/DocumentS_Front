@@ -48,7 +48,6 @@ export interface FABAction {
   color: string
 }
 
-// Re-export audit log types
 export * from './auditlog'
 
 export interface FileIcon {

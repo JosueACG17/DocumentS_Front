@@ -1,8 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import type { KMeansCluster } from '@/types'
 import { GraphicsService } from '@/services/GraphicsService'
-
-// Tipos para la respuesta del entrenamiento
 interface TrainResponse {
   message: string
   clusters: Array<{
@@ -54,21 +52,16 @@ export function useKMeans() {
       isAnalyzing.value = true
       kmeansStatus.value = 'Entrenando modelo...'
 
-      // 1. Entrenar el modelo K-means
       const trainResponse = await GraphicsService.trainKMeans()
       console.log('Modelo entrenado:', trainResponse)
 
-      // 2. Obtener los datos de la gráfica
       kmeansStatus.value = 'Obteniendo gráfica...'
       const graphResponse = await GraphicsService.getTextClusterGraph()
-
-      // Convertir el blob a URL para mostrar la imagen
       if (graphResponse instanceof Blob) {
         const imageUrl = window.URL.createObjectURL(graphResponse)
         graphData.value = imageUrl
       }
 
-      // 3. Procesar los resultados del entrenamiento
       if (trainResponse && typeof trainResponse === 'object' && 'clusters' in trainResponse) {
         const clusters = (trainResponse as TrainResponse).clusters
         const processedResults = clusters.map((cluster: ClusterData, index: number) => ({

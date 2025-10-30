@@ -1,6 +1,5 @@
 import * as yup from 'yup'
 
-// Esquema de validación para login
 export const loginSchema = yup.object({
   email: yup
     .string()
@@ -12,7 +11,6 @@ export const loginSchema = yup.object({
     .min(6, 'La contraseña debe tener al menos 6 caracteres'),
 })
 
-// Esquema de validación para registro
 export const registerSchema = yup.object({
   fullName: yup
     .string()

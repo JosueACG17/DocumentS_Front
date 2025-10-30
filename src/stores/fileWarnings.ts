@@ -10,10 +10,8 @@ interface FileWarning {
 }
 
 export const useFileWarningsStore = defineStore('fileWarnings', () => {
-  // Estado
-  const warnings = ref<Record<string, FileWarning>>({}) // filename -> FileWarning
+  const warnings = ref<Record<string, FileWarning>>({})
 
-  // Acciones
   function addWarning(filename: string, message: string, fromCategory: string, toCategory: string) {
     warnings.value[filename] = {
       filename,
@@ -23,7 +21,6 @@ export const useFileWarningsStore = defineStore('fileWarnings', () => {
       toCategory,
     }
 
-    // Guardar en localStorage para persistencia
     saveToLocalStorage()
   }
 
@@ -49,7 +46,7 @@ export const useFileWarningsStore = defineStore('fileWarnings', () => {
     return Object.values(warnings.value)
   }
 
-  // Persistencia en localStorage
+
   function saveToLocalStorage() {
     try {
       localStorage.setItem('fileWarnings', JSON.stringify(warnings.value))
@@ -70,14 +67,11 @@ export const useFileWarningsStore = defineStore('fileWarnings', () => {
     }
   }
 
-  // Inicialización
   function init() {
     loadFromLocalStorage()
-    // Limpiar advertencias antiguas (más de 30 días)
     cleanupOldWarnings()
   }
 
-  // Limpieza automática de advertencias antiguas
   function cleanupOldWarnings() {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -94,7 +88,6 @@ export const useFileWarningsStore = defineStore('fileWarnings', () => {
     saveToLocalStorage()
   }
 
-  // Getter computados
   function getWarningsCount(): number {
     return Object.keys(warnings.value).length
   }
@@ -106,10 +99,7 @@ export const useFileWarningsStore = defineStore('fileWarnings', () => {
   }
 
   return {
-    // Estado
     warnings,
-
-    // Acciones
     addWarning,
     removeWarning,
     clearAllWarnings,
@@ -117,12 +107,8 @@ export const useFileWarningsStore = defineStore('fileWarnings', () => {
     getWarning,
     getAllWarnings,
     init,
-
-    // Getters
     getWarningsCount,
     getWarningsByCategory,
-
-    // Utilidades
     saveToLocalStorage,
     loadFromLocalStorage,
     cleanupOldWarnings,

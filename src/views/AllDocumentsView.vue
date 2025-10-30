@@ -454,12 +454,12 @@ const viewType = ref<'grid' | 'table'>('grid')
 // Mapea DocumentData a Document para la vista
 const allDocuments = computed<Document[]>(() => {
   return documentsStore.documents.map((doc, idx) => ({
-    id: idx + 1, // Si tienes un id real, úsalo
+    id: idx + 1,
     name: doc.filename,
     category: doc.categories[0] || 'Sin categoría',
     extension: doc.filename.split('.').pop() || '',
     size: doc.content ? `${(doc.content.length / 1024).toFixed(1)} KB` : '',
-    date: doc.created_at || '', // Usar la fecha del documento
+    date: doc.created_at || '',
   }))
 })
 
@@ -531,7 +531,7 @@ function formatRelativeTime(dateString: string): string {
 
 // Función para obtener páginas visibles en la paginación
 function getVisiblePages(): number[] {
-  const delta = 2 // Número de páginas a mostrar a cada lado de la página actual
+  const delta = 2 
   const pages: number[] = []
   const rangeStart = Math.max(1, currentPage.value - delta)
   const rangeEnd = Math.min(totalPages.value, currentPage.value + delta)
